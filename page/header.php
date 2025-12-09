@@ -67,7 +67,7 @@ if (!isset($_SESSION['staff_ic'])) {
                                 <a class="nav-link" href="">
                                     <div class="sb-nav-link-icon"><i class="fa-solid fa-person-shelter"></i></div>Facilities
                                 </a>
-                                <a class="nav-link" href="">
+                                <a class="nav-link" href="../students/student.php">
                                     <div class="sb-nav-link-icon"><i class="fa-solid fa-user"></i></div>Student
                                 </a>
                                 <a class="nav-link" href="">
