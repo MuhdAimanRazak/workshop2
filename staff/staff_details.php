@@ -2,31 +2,28 @@
 include("../config/config.php");
 
 /* ======================
-   GET STUDENT ID (STRING)
+   GET STAFF ID (STRING)
 ====================== */
-$student_id = $_GET['id'] ?? '';
+$staff_id = $_GET['id'] ?? '';
 
-// If invalid ID → back to student list
-if ($student_id === '') {
-    header("Location: /workshop2/students/student.php");
+if ($staff_id === '') {
+    header("Location: /workshop2/staff/staff.php");
     exit;
 }
 
 /* ======================
-   FETCH STUDENT
+   FETCH STAFF
 ====================== */
 $sql = "SELECT 
-            student_id,
+            staff_id,
             full_name,
             email,
             address,
             phone_no,
-            student_ic,
-            faculty,
-            course,
-            parent_contact
-        FROM student
-        WHERE student_id = ?
+            staff_ic,
+            role
+        FROM staff
+        WHERE staff_id = ?
         LIMIT 1";
 
 $stmt = $conn->prepare($sql);
@@ -34,23 +31,22 @@ if (!$stmt) {
     die("SQL error");
 }
 
-/* 🔴 student_id IS STRING */
-$stmt->bind_param("s", $student_id);
+$stmt->bind_param("s", $staff_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows === 0) {
-    echo "<div class='container mt-4'><h4>Student not found</h4></div>";
+    echo "<div class='container mt-4'><h4>Staff not found</h4></div>";
     exit;
 }
 
-$student = $result->fetch_assoc();
+$staff = $result->fetch_assoc();
 
 function s($arr, $key, $default = '') {
     return isset($arr[$key]) ? $arr[$key] : $default;
 }
 
-$back_url = "/workshop2/students/student.php";
+$back_url = "/workshop2/staff/staff.php";
 ?>
 
 <?php include("../page/header.php"); ?>
@@ -89,7 +85,7 @@ $back_url = "/workshop2/students/student.php";
 }
 .edit-button-wrap {
     position:absolute;
-    height: 42px;
+    height:42px;
     right:0;
     top:10px;
 }
@@ -104,6 +100,8 @@ $back_url = "/workshop2/students/student.php";
 .change-pass-btn:hover {
     background: #3b67f2;
 }
+
+
 .profile-details {
     display:grid;
     grid-template-columns:repeat(2,1fr);
@@ -134,83 +132,76 @@ $back_url = "/workshop2/students/student.php";
 
     <div class="profile-shell">
 
+        <!-- ===== TOP ===== -->
         <div class="profile-top">
+
             <div class="avatar-wrap">
+                <!-- Default avatar (same pattern as student) -->
                 <img src="/workshop2/assets/avatar-default.png">
             </div>
 
             <div class="profile-name">
-                <?= htmlspecialchars(s($student,'full_name')) ?>
+                <?= htmlspecialchars(s($staff,'full_name')) ?>
             </div>
 
-<div class="edit-button-wrap d-flex gap-2">
-
-    <a href="editstudentprofile.php?id=<?= s($student,'student_id') ?>"
-       class="btn btn-primary">
+  <div class="edit-button-wrap d-flex gap-2">
+    <a href="edit_staff.php?id=<?= s($staff,'staff_id') ?>" class="btn btn-primary">
         Edit
     </a>
 
-    <a href="change_student_password.php?id=<?= s($student,'student_id') ?>"
-       class="btn btn-primary change-pass-btn">
-        Change Password
-    </a>
+<a href="change_staff_password.php?id=<?= s($staff,'staff_id') ?>"
+   class="btn btn-secondary change-pass-btn">
+    Change Password
+</a>
 
-    <form method="post" action="delete_student.php"
-          onsubmit="return confirm('Are you sure you want to delete this student?');">
-        <input type="hidden" name="student_id" value="<?= s($student,'student_id') ?>">
+
+    <form method="post" action="delete_staff.php"
+          onsubmit="return confirm('Are you sure you want to delete this staff?');">
+        <input type="hidden" name="staff_id" value="<?= s($staff,'staff_id') ?>">
         <button type="submit" class="btn btn-danger">
             Delete
         </button>
     </form>
-
 </div>
 
 
         </div>
 
+        <!-- ===== DETAILS ===== -->
         <div class="profile-details">
 
             <div>
-                <div class="detail-title">Matric Number</div>
-                <div class="detail-value"><?= s($student,'student_id') ?></div>
+                <div class="detail-title">Staff ID</div>
+                <div class="detail-value"><?= s($staff,'staff_id') ?></div>
             </div>
 
             <div>
                 <div class="detail-title">Phone</div>
-                <div class="detail-value"><?= s($student,'phone_no') ?></div>
+                <div class="detail-value"><?= s($staff,'phone_no') ?: '—' ?></div>
             </div>
 
             <div>
                 <div class="detail-title">IC</div>
-                <div class="detail-value"><?= s($student,'student_ic') ?></div>
+                <div class="detail-value"><?= s($staff,'staff_ic') ?: '—' ?></div>
             </div>
 
             <div>
                 <div class="detail-title">Address</div>
-                <div class="detail-value"><?= nl2br(s($student,'address')) ?></div>
+                <div class="detail-value"><?= nl2br(s($staff,'address')) ?: '—' ?></div>
             </div>
 
             <div>
-                <div class="detail-title">Faculty</div>
-                <div class="detail-value"><?= s($student,'faculty') ?></div>
-            </div>
-
-            <div>
-                <div class="detail-title">Course</div>
-                <div class="detail-value"><?= s($student,'course') ?></div>
-            </div>
-
-            <div>
-                <div class="detail-title">Parent Contact</div>
-                <div class="detail-value"><?= s($student,'parent_contact') ?></div>
+                <div class="detail-title">Role</div>
+                <div class="detail-value"><?= s($staff,'role') ?: '—' ?></div>
             </div>
 
             <div>
                 <div class="detail-title">Email</div>
-                <div class="detail-value"><?= s($student,'email') ?: '—' ?></div>
+                <div class="detail-value"><?= s($staff,'email') ?: '—' ?></div>
             </div>
 
         </div>
+
     </div>
 </div>
 </main>

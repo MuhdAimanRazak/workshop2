@@ -1,0 +1,130 @@
+<?php
+include("../config/config.php");
+
+/* =========================
+   GET STAFF ID
+========================= */
+$staff_id = $_GET['id'] ?? '';
+
+if ($staff_id === '') {
+    header("Location: staff.php");
+    exit;
+}
+
+/* =========================
+   FETCH STAFF (for name)
+========================= */
+$stmt = $conn->prepare("SELECT full_name FROM staff WHERE staff_id = ?");
+$stmt->bind_param("s", $staff_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows === 0) {
+    echo "<div class='container mt-4'><h4>Staff not found</h4></div>";
+    exit;
+}
+
+$staff = $result->fetch_assoc();
+
+/* =========================
+   CHANGE PASSWORD
+========================= */
+$msg = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    $new_password     = $_POST['new_password'];
+    $confirm_password = $_POST['confirm_password'];
+
+    if (strlen($new_password) < 6) {
+        $msg = "<div class='alert alert-danger'>Password must be at least 6 characters.</div>";
+    }
+    elseif ($new_password !== $confirm_password) {
+        $msg = "<div class='alert alert-danger'>Passwords do not match.</div>";
+    }
+    else {
+        $hashed = password_hash($new_password, PASSWORD_DEFAULT);
+
+        $update = $conn->prepare(
+            "UPDATE staff SET password = ? WHERE staff_id = ?"
+        );
+        $update->bind_param("ss", $hashed, $staff_id);
+        $update->execute();
+
+        header("Location: staff_details.php?id=".$staff_id);
+        exit;
+    }
+}
+?>
+
+<?php include("../page/header.php"); ?>
+
+<main>
+<style>
+/* ===== SAME UI AS STUDENT EDIT ===== */
+.edit-page {
+    max-width: 700px;
+    margin: 3rem auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+    padding: 2rem;
+}
+.form-group label {
+    font-weight:600;
+    margin-bottom:6px;
+    display:block;
+}
+.form-group input {
+    width:100%;
+    padding:.5rem .65rem;
+    border-radius:8px;
+    border:1px solid #e1e6f3;
+}
+.btn-row {
+    display:flex;
+    justify-content:flex-end;
+    gap:.6rem;
+    margin-top:1rem;
+}
+.btn-row .btn { border-radius:999px; }
+</style>
+
+<div class="container">
+<div class="edit-page">
+
+<h3>Change Password</h3>
+<p style="font-weight:600;">
+    Staff: <?= htmlspecialchars($staff['full_name']) ?>
+</p>
+
+<?= $msg ?>
+
+<form method="post">
+
+    <div class="form-group">
+        <label>New Password</label>
+        <input type="password" name="new_password" required>
+    </div>
+
+    <div class="form-group">
+        <label>Confirm Password</label>
+        <input type="password" name="confirm_password" required>
+    </div>
+
+    <div class="btn-row">
+        <a href="staff_details.php?id=<?= $staff_id ?>" class="btn btn-outline-secondary">
+            Cancel
+        </a>
+        <button type="submit" class="btn btn-success">
+            Update Password
+        </button>
+    </div>
+
+</form>
+
+</div>
+</div>
+</main>
+
+<?php include("../page/footer.php"); ?>

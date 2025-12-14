@@ -70,7 +70,7 @@ if (!isset($_SESSION['staff_ic'])) {
                                 <a class="nav-link" href="../students/student.php">
                                     <div class="sb-nav-link-icon"><i class="fa-solid fa-user"></i></div>Student
                                 </a>
-                                <a class="nav-link" href="">
+                                <a class="nav-link" href="../staff/staff.php">
                                     <div class="sb-nav-link-icon"><i class="fa-solid fa-clipboard-user"></i></div>Staff
                                 </a>
                                 <div class="sb-sidenav-menu-heading">Report</div>

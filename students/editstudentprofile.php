@@ -1,303 +1,311 @@
 <?php
-include("../page/header.php");
+include("../config/config.php");
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    $student_id     = $_POST['student_id'];
+    $full_name      = $_POST['full_name'];
+    $phone_no       = $_POST['phone_no'];
+    $student_ic     = $_POST['student_ic'];
+    $parent_contact = $_POST['parent_contact'];
+    $course         = $_POST['course'];
+    $email          = $_POST['email'];
+    $address        = $_POST['address'];
+
+    // AUTO FACULTY FROM COURSE
+    if (strpos($course, 'Computer') !== false || strpos($course, 'Information Technology') !== false) {
+        $faculty = "FTMK";
+    } elseif (strpos($course, 'Electrical') !== false || strpos($course, 'Electronics') !== false || strpos($course, 'Mechatronics') !== false) {
+        $faculty = "FKE";
+    } elseif (strpos($course, 'Mechanical') !== false || strpos($course, 'Automotive') !== false || strpos($course, 'Industrial') !== false) {
+        $faculty = "FKM";
+    } elseif (strpos($course, 'Manufacturing') !== false || strpos($course, 'Product Design') !== false || strpos($course, 'Materials') !== false) {
+        $faculty = "FKP";
+    } elseif (strpos($course, 'Technology') !== false) {
+        $faculty = "FTKMP";
+    } else {
+        $faculty = NULL;
+    }
+
+    $sql = "UPDATE student SET
+                full_name = ?,
+                phone_no = ?,
+                student_ic = ?,
+                parent_contact = ?,
+                course = ?,
+                faculty = ?,
+                email = ?,
+                address = ?
+            WHERE student_id = ?";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param(
+        "sssssssss",
+        $full_name,
+        $phone_no,
+        $student_ic,
+        $parent_contact,
+        $course,
+        $faculty,
+        $email,
+        $address,
+        $student_id
+    );
+
+    $stmt->execute();
+
+    header("Location: student_details.php?id=".$student_id);
+    exit;
+}
+
+/* =========================
+   GET DATA (DISPLAY)
+========================= */
+$student_id = $_GET['id'] ?? '';
+
+$sql = "SELECT * FROM student WHERE student_id = ? LIMIT 1";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $student_id);
+$stmt->execute();
+$student = $stmt->get_result()->fetch_assoc();
+
+function s($k){ global $student; return htmlspecialchars($student[$k] ?? ''); }
 ?>
 
+<?php include("../page/header.php"); ?>
+
 <main>
-    <style>
-  
+<style>
+/* ===== UI AS IS – TAK SENTUH ===== */
 .edit-page {
-    max-width: 1100px; /* increased width to match footer */
+    max-width: 1100px;
     margin: 3.25rem auto;
     background: #fff;
     border-radius: 12px;
     box-shadow: 0 12px 30px rgba(0,0,0,0.06);
-    padding: 2rem; /* slightly increased for better spacing */
+    padding: 2rem;
 }
-
-.edit-page h3 {
-    margin-bottom: 0.75rem;
-    font-weight: 700;
-}
-
 .edit-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
-    margin-bottom: 0.6rem;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:.75rem;
 }
-
 .form-group label {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 6px;
-    font-size: 0.92rem;
+    font-weight:600;
+    margin-bottom:6px;
+    display:block;
 }
-
 .form-group input, .form-group select {
-    width: 100%;
-    padding: 0.5rem 0.65rem;
-    border-radius: 8px;
-    border: 1px solid #e1e6f3;
-    font-size: 0.95rem;
+    width:100%;
+    padding:.5rem .65rem;
+    border-radius:8px;
+    border:1px solid #e1e6f3;
 }
-
-.full-row { grid-column: 1 / -1; }
-
-.btn-row {
+.full-row{grid-column:1/-1;}
+.btn-row{
     display:flex;
-    gap: .6rem;
-    justify-content: flex-end;
-    margin-top: .9rem;
+    justify-content:flex-end;
+    gap:.6rem;
+    margin-top:1rem;
 }
+.btn-row .btn{border-radius:999px;}
+</style>
 
-.btn-row .btn {
-    border-radius: 999px;
-}
+<div class="container">
+<div class="edit-page">
 
-/* small responsive */
-@media (max-width: 640px) {
-    .edit-row {
-        grid-template-columns: 1fr;
-    }
-    .btn-row {
-        justify-content: center;
-    }
-}
-    </style>
+<h3>Edit Student Profile</h3>
 
-    <div class="container">
-        <div class="edit-page">
+<form method="post">
 
-            <?php
-            // Optional: get id from query string for later DB usage
-            // $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-            // For now we use static demo values (no DB).
-            ?>
+<div class="edit-row">
 
-            <h3>Edit Student Profile</h3>
-            <p style="color:#666; margin-bottom:1rem;">(UI only — Save button disabled)</p>
+<div class="form-group full-row">
+<label>Full Name</label>
+<input type="text" name="full_name" value="<?= s('full_name') ?>">
+</div>
 
-            <form id="editStudentForm" onsubmit="return false;">
-                <div class="edit-row">
+<div class="form-group">
+<label>Matric Number</label>
+<input type="text" name="student_id" value="<?= s('student_id') ?>">
+</div>
 
-                    <!-- LEFT COLUMN (top -> down) -->
-                    <div class="form-group">
-                        <label>Matric Number</label>
-                        <input type="text" id="matric" value="B032310690" />
-                    </div>
+<input type="hidden" name="faculty" id="faculty" value="<?= s('faculty') ?>">
 
-                    <!-- RIGHT COLUMN: Gender -->
-                    <div class="form-group">
-                        <label>Gender</label>
-                        <select id="gender">
-                            <option value="Female" selected>Female</option>
-                            <option value="Male">Male</option>
-                        </select>
-                    </div>
 
-                    <!-- LEFT: Phone Number -->
-                    <div class="form-group">
-                        <label>Phone Number</label>
-                        <input type="text" id="phone" value="0149288458" />
-                    </div>
 
-                    <!-- RIGHT: IC Number -->
-                    <div class="form-group">
-                        <label>IC Number</label>
-                        <input type="text" id="ic" value="990101-01-1234" />
-                    </div>
+<div class="form-group">
+<label>Phone Number</label>
+<input type="text" name="phone_no" value="<?= s('phone_no') ?>">
+</div>
 
-                    <!-- LEFT: Emergency Contact Relation -->
-                    <div class="form-group">
-                        <label>Emergency Contact Relation</label>
-                        <input type="text" id="emergency_rel" value="Mother" />
-                    </div>
+<div class="form-group">
+<label>IC Number</label>
+<input type="text" name="student_ic" value="<?= s('student_ic') ?>">
+</div>
 
-                    <!-- RIGHT: Guardian's Number -->
-                    <div class="form-group">
-                        <label>Guardian's Number</label>
-                        <input type="text" id="guardian" value="012345678" />
-                    </div>
+<div class="form-group">
+<label>Guardian's Number</label>
+<input type="text" name="parent_contact" value="<?= s('parent_contact') ?>">
+</div>
 
-                    <!-- LEFT: Building -->
-                    <div class="form-group">
-                        <label>Building</label>
-                        <select id="building">
-                            <option value="" data-gender="both" selected>Select Building</option>
+<div class="form-group">
+<label>Email</label>
+<input type="email" name="email" value="<?= s('email') ?>">
+</div>
 
-                            <!-- SATRIA -->
-                            <optgroup label="Satria">
-                                <option value="Satria - Lekiu" data-gender="female">Satria - Lekiu</option>
-                                <option value="Satria - Lekir" data-gender="female">Satria - Lekir</option>
-                                <option value="Satria - Tuah" data-gender="male">Satria - Tuah</option>
-                                <option value="Satria - Jebat" data-gender="male">Satria - Jebat</option>
-                                <option value="Satria - Kasturi" data-gender="male">Satria - Kasturi</option>
-                            </optgroup>
+<div>
+    <div class="detail-title">Programme</div>
+    <div class="detail-value">
+        <select name="course" style="width:100%; padding:.4rem;">
+            <optgroup label="FTMK – Fakulti Teknologi Maklumat & Komunikasi">
+                <option <?= ($student['course']=="Bachelor of Computer Science (Artificial Intelligence)")?"selected":"" ?>>
+                    Bachelor of Computer Science (Artificial Intelligence)
+                </option>
+                <option <?= ($student['course']=="Bachelor of Computer Science (Data Engineering)")?"selected":"" ?>>
+                    Bachelor of Computer Science (Data Engineering)
+                </option>
+                <option <?= ($student['course']=="Bachelor of Computer Science (Software Development)")?"selected":"" ?>>
+                    Bachelor of Computer Science (Software Development)
+                </option>
+                <option <?= ($student['course']=="Bachelor of Computer Science (Cybersecurity)")?"selected":"" ?>>
+                    Bachelor of Computer Science (Cybersecurity)
+                </option>
+                <option <?= ($student['course']=="Bachelor of Information Technology (Information Security)")?"selected":"" ?>>
+                    Bachelor of Information Technology (Information Security)
+                </option>
+                <option <?= ($student['course']=="Bachelor of Information Technology (Software Engineering)")?"selected":"" ?>>
+                    Bachelor of Information Technology (Software Engineering)
+                </option>
+                <option <?= ($student['course']=="Diploma in Computer Science")?"selected":"" ?>>
+                    Diploma in Computer Science
+                </option>
+                <option <?= ($student['course']=="Diploma in Information Technology")?"selected":"" ?>>
+                    Diploma in Information Technology
+                </option>
+            </optgroup>
 
-                            <!-- LESTARI -->
-                            <optgroup label="Lestari">
-                                <option value="Lestari - Block A (Female)" data-gender="female">Lestari - Block A (Female)</option>
-                                <option value="Lestari - Block B (Male)" data-gender="male">Lestari - Block B (Male)</option>
-                            </optgroup>
+            <optgroup label="FKE – Fakulti Kejuruteraan Elektrik">
+                <option <?= ($student['course']=="Bachelor of Electrical Engineering")?"selected":"" ?>>
+                    Bachelor of Electrical Engineering
+                </option>
+                <option <?= ($student['course']=="Bachelor of Electronics Engineering")?"selected":"" ?>>
+                    Bachelor of Electronics Engineering
+                </option>
+                <option <?= ($student['course']=="Bachelor of Mechatronics Engineering")?"selected":"" ?>>
+                    Bachelor of Mechatronics Engineering
+                </option>
+                <option <?= ($student['course']=="Diploma in Electrical Engineering")?"selected":"" ?>>
+                    Diploma in Electrical Engineering
+                </option>
+                <option <?= ($student['course']=="Diploma in Electronics Engineering")?"selected":"" ?>>
+                    Diploma in Electronics Engineering
+                </option>
+            </optgroup>
 
-                            <!-- AL-JAZARI -->
-                            <optgroup label="Al-Jazari">
-                                <option value="Al-Jazari - Block A" data-gender="male">Al-Jazari - Block A</option>
-                                <option value="Al-Jazari - Block B" data-gender="male">Al-Jazari - Block B</option>
-                                <option value="Al-Jazari - Block C" data-gender="male">Al-Jazari - Block C</option>
-                            </optgroup>
-                        </select>
-                    </div>
-
-                    <!-- RIGHT: Room -->
-                    <div class="form-group">
-                        <label>Room</label>
-                        <input type="text" id="room" value="SQ-12-4B" />
-                    </div>
-
-                    <!-- LEFT: Programme -->
-                    <div class="form-group">
-                        <label>Programme</label>
-                        <select id="programme">
-                            <optgroup label="FTMK – Fakulti Teknologi Maklumat & Komunikasi">
-                                <option>Bachelor of Computer Science (Artificial Intelligence)</option>
-                                <option>Bachelor of Computer Science (Data Engineering)</option>
-                                <option>Bachelor of Computer Science (Software Development)</option>
-                                <option>Bachelor of Computer Science (Cybersecurity)</option>
-                                <option>Bachelor of Information Technology (Information Security)</option>
-                                <option>Bachelor of Information Technology (Software Engineering)</option>
-                                <option>Diploma in Computer Science</option>
-                                <option>Diploma in Information Technology</option>
-                            </optgroup>
-
-                            <optgroup label="FKE – Fakulti Kejuruteraan Elektrik">
-                                <option>Bachelor of Electrical Engineering</option>
-                                <option>Bachelor of Electronics Engineering</option>
-                                <option>Bachelor of Mechatronics Engineering</option>
-                                <option>Diploma in Electrical Engineering</option>
-                                <option>Diploma in Electronics Engineering</option>
-                            </optgroup>
-
-                            <optgroup label="FKM – Fakulti Kejuruteraan Mekanikal">
-                                <option>Bachelor of Mechanical Engineering</option>
-                                <option>Bachelor of Manufacturing Engineering</option>
-                                <option>Bachelor of Industrial Engineering</option>
-                                <option>Bachelor of Automotive Engineering</option>
-                                <option>Diploma in Mechanical Engineering</option>
-                                <option>Diploma in Industrial Engineering</option>
-                            </optgroup>
-
-                            <optgroup label="FKP – Fakulti Kejuruteraan Pembuatan">
-                                <option>Bachelor of Manufacturing Engineering</option>
-                                <option>Bachelor of Product Design Engineering</option>
-                                <option>Bachelor of Materials Engineering</option>
-                                <option>Diploma in Manufacturing Engineering</option>
-                            </optgroup>
-
-                            <optgroup label="FKEKK – Fakulti Kejuruteraan Elektronik & Kejuruteraan Komputer">
-                                <option>Bachelor of Computer Engineering</option>
-                                <option>Bachelor of Electronics Engineering (Computer Engineering)</option>
-                                <option>Bachelor of Telecommunication Engineering</option>
-                                <option>Diploma in Computer Engineering</option>
-                                <option>Diploma in Electronics Engineering</option>
-                            </optgroup>
-
-                            <optgroup label="FTKMP – Fakulti Kejuruteraan Teknologi">
-                                <option>Bachelor of Technology in Automotive Technology</option>
-                                <option>Bachelor of Technology in Manufacturing Systems</option>
-                                <option>Bachelor of Technology in Welding</option>
-                                <option>Bachelor of Technology in Industrial Automation</option>
-                                <option>Bachelor of Technology in Robotics & Automation</option>
-                                <option>Diploma in Technology (Automotive / Electronic / Manufacturing)</option>
-                            </optgroup>
-
-                            <optgroup label="FPTT – Fakulti Pengurusan Teknologi & Teknousahawanan">
-                                <option>Bachelor of Technology Management</option>
-                                <option>Bachelor of Technology Entrepreneurship</option>
-                                <option>Diploma in Technology Management</option>
-                            </optgroup>
-                        </select>
-                    </div>
-
-                    <!-- RIGHT: Year / Semester -->
-                    <div class="form-group">
-                        <label>Year / Semester</label>
-                        <select id="year_semester">
-                            <option selected disabled>Select Year & Semester</option>
-
-                            <optgroup label="Year 1">
-                                <option>Year 1 / Semester 1</option>
-                                <option>Year 1 / Semester 2</option>
-                            </optgroup>
-
-                            <optgroup label="Year 2">
-                                <option>Year 2 / Semester 3</option>
-                                <option>Year 2 / Semester 4</option>
-                            </optgroup>
-
-                            <optgroup label="Year 3">
-                                <option>Year 3 / Semester 5</option>
-                                <option>Year 3 / Semester 6</option>
-                            </optgroup>
-
-                            <optgroup label="Year 4">
-                                <option>Year 4 / Semester 7</option>
-                                <option>Year 4 / Semester 8</option>
-                            </optgroup>
-                        </select>
-                    </div>
-
-                    <!-- RIGHT (bottom): Email -->
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" id="email" value="nurain.farahin@example.com" />
-                    </div>
-
-                </div> <!-- end edit-row -->
-
-                <div class="btn-row">
-                    <button type="button" class="btn btn-outline-secondary btn-disabled">Cancel</button>
-                    <button type="button" class="btn btn-success btn-disabled">Save (disabled)</button>
-                </div>
-            </form>
-        </div>
+            <optgroup label="FKM – Fakulti Kejuruteraan Mekanikal">
+                <option <?= ($student['course']=="Bachelor of Mechanical Engineering")?"selected":"" ?>>
+                    Bachelor of Mechanical Engineering
+                </option>
+                <option <?= ($student['course']=="Bachelor of Manufacturing Engineering")?"selected":"" ?>>
+                    Bachelor of Manufacturing Engineering
+                </option>
+                <option <?= ($student['course']=="Bachelor of Industrial Engineering")?"selected":"" ?>>
+                    Bachelor of Industrial Engineering
+                </option>
+                <option <?= ($student['course']=="Bachelor of Automotive Engineering")?"selected":"" ?>>
+                    Bachelor of Automotive Engineering
+                </option>
+                <option <?= ($student['course']=="Diploma in Mechanical Engineering")?"selected":"" ?>>
+                    Diploma in Mechanical Engineering
+                </option>
+                <option <?= ($student['course']=="Diploma in Industrial Engineering")?"selected":"" ?>>
+                    Diploma in Industrial Engineering
+                </option>
+            </optgroup>
+        </select>
     </div>
+</div>
 
-    <script>
-        // Filter building options depending on selected gender.
-        (function() {
-            const genderSelect = document.getElementById('gender');
-            const buildingSelect = document.getElementById('building');
 
-            function applyBuildingFilter() {
-                const gender = genderSelect.value; // "Female" or "Male"
-                const opts = Array.from(buildingSelect.querySelectorAll('option'));
-                let currentValue = buildingSelect.value;
+<div class="form-group full-row">
+<label>Address</label>
+<input type="text" name="address" value="<?= s('address') ?>">
+</div>
 
-                // Show/hide options based on data-gender attribute.
-                opts.forEach(opt => {
-                    // always allow placeholder (data-gender="both") to remain visible
-                    const allowed = opt.dataset.gender === 'both' || opt.dataset.gender === gender.toLowerCase();
-                    opt.hidden = !allowed;
-                    opt.disabled = !allowed;
-                });
+</div>
 
-                // If current value is not allowed, reset to placeholder
-                const currentOpt = buildingSelect.querySelector('option[value="' + currentValue + '"]');
-                if (!currentOpt || currentOpt.hidden) {
-                    buildingSelect.value = "";
-                }
-            }
+<div class="btn-row">
+<a href="student_details.php?id=<?= s('student_id') ?>" 
+   class="btn btn-outline-secondary">
+   Cancel
+</a>
 
-            // run on load
-            document.addEventListener('DOMContentLoaded', applyBuildingFilter);
-            // run when gender changes
-            genderSelect.addEventListener('change', applyBuildingFilter);
-        })();
-    </script>
+<button type="submit" class="btn btn-success">Save</button>
+</div>
+
+</form>
+</div>
+</div>
+
+<script>
+const programmeToFaculty = {
+    "Bachelor of Computer Science (Artificial Intelligence)": "FTMK",
+    "Bachelor of Computer Science (Data Engineering)": "FTMK",
+    "Bachelor of Computer Science (Software Development)": "FTMK",
+    "Bachelor of Computer Science (Cybersecurity)": "FTMK",
+    "Bachelor of Information Technology (Information Security)": "FTMK",
+    "Bachelor of Information Technology (Software Engineering)": "FTMK",
+    "Diploma in Computer Science": "FTMK",
+    "Diploma in Information Technology": "FTMK",
+
+    "Bachelor of Electrical Engineering": "FKE",
+    "Bachelor of Electronics Engineering": "FKE",
+    "Bachelor of Mechatronics Engineering": "FKE",
+    "Diploma in Electrical Engineering": "FKE",
+    "Diploma in Electronics Engineering": "FKE",
+
+    "Bachelor of Mechanical Engineering": "FKM",
+    "Bachelor of Manufacturing Engineering": "FKM",
+    "Bachelor of Industrial Engineering": "FKM",
+    "Bachelor of Automotive Engineering": "FKM",
+    "Diploma in Mechanical Engineering": "FKM",
+    "Diploma in Industrial Engineering": "FKM",
+
+    "Bachelor of Manufacturing Engineering": "FKP",
+    "Bachelor of Product Design Engineering": "FKP",
+    "Bachelor of Materials Engineering": "FKP",
+    "Diploma in Manufacturing Engineering": "FKP",
+
+    "Bachelor of Computer Engineering": "FKEKK",
+    "Bachelor of Electronics Engineering (Computer Engineering)": "FKEKK",
+    "Bachelor of Telecommunication Engineering": "FKEKK",
+    "Diploma in Computer Engineering": "FKEKK",
+    "Diploma in Electronics Engineering": "FKEKK",
+
+    "Bachelor of Technology in Automotive Technology": "FTKMP",
+    "Bachelor of Technology in Manufacturing Systems": "FTKMP",
+    "Bachelor of Technology in Welding": "FTKMP",
+    "Bachelor of Technology in Industrial Automation": "FTKMP",
+    "Bachelor of Technology in Robotics & Automation": "FTKMP",
+    "Diploma in Technology (Automotive / Electronic / Manufacturing)": "FTKMP",
+
+    "Bachelor of Technology Management": "FPTT",
+    "Bachelor of Technology Entrepreneurship": "FPTT",
+    "Diploma in Technology Management": "FPTT"
+};
+
+const programmeSelect = document.querySelector('select[name="course"]');
+const facultyInput = document.getElementById('faculty');
+
+if (programmeSelect) {
+    programmeSelect.addEventListener('change', function () {
+        const selectedProgramme = this.value;
+        facultyInput.value = programmeToFaculty[selectedProgramme] || '';
+    });
+}
+</script>
 
 </main>
 
-<?php
-include("../page/footer.php");
-?>
+<?php include("../page/footer.php"); ?>
