@@ -72,7 +72,7 @@ if (!isset($conn) || !$conn) {
         <div class="student-banner">
             <img src="../studentsearch.png" alt="Student Directory">
         </div>
-        
+
         <!-- Search bar -->
         <div class="d-flex justify-content-center mb-1">
             <div class="student-search-wrapper">

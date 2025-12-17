@@ -1,6 +1,7 @@
 <?php
 include("../config/config.php");
 
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $student_id     = $_POST['student_id'];
@@ -54,6 +55,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $stmt->execute();
 
+    
+$bedKey = $_POST['bed_key'] ?? '';
+$status_payment = $_POST['status_payment'] ?? 'Pending';
+
+
+if ($bedKey) {
+    list($room_id, $bed_no) = explode('|', $bedKey);
+
+    /* =========================
+       CHECK EXISTING BOOKING
+    ========================= */
+    $chk = $conn->prepare("
+        SELECT room_id, bed_no
+        FROM booking
+        WHERE student_id = ?
+        LIMIT 1
+    ");
+    $chk->bind_param("s", $student_id);
+    $chk->execute();
+    $old = $chk->get_result()->fetch_assoc();
+
+    if ($old) {
+        // 1️⃣ Free OLD bed
+        $free = $conn->prepare("
+            UPDATE room
+            SET status_bed = 'available'
+            WHERE room_id = ? AND bed_no = ?
+        ");
+        $free->bind_param("ii", $old['room_id'], $old['bed_no']);
+        $free->execute();
+
+        // 2️⃣ Update booking
+        $upd = $conn->prepare("
+        UPDATE booking
+        SET room_id = ?, bed_no = ?, status_payment = ?
+         WHERE student_id = ?
+        ");
+        $upd->bind_param("iiss", $room_id, $bed_no, $status_payment, $student_id);
+
+        $upd->execute();
+
+    } else {
+        // 3️⃣ Insert new booking (admin assign)
+$ins = $conn->prepare("
+    INSERT INTO booking (student_id, room_id, bed_no, status_payment)
+    VALUES (?, ?, ?, ?)
+");
+$ins->bind_param("siis", $student_id, $room_id, $bed_no, $status_payment);
+
+        $ins->execute();
+    }
+
+    // 4️⃣ Occupy NEW bed
+    $occ = $conn->prepare("
+        UPDATE room
+        SET status_bed = 'occupied'
+        WHERE room_id = ? AND bed_no = ?
+    ");
+    $occ->bind_param("ii", $room_id, $bed_no);
+    $occ->execute();
+}
+
+
+
     header("Location: student_details.php?id=".$student_id);
     exit;
 }
@@ -68,6 +133,7 @@ $stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $student_id);
 $stmt->execute();
 $student = $stmt->get_result()->fetch_assoc();
+
 
 function s($k){ global $student; return htmlspecialchars($student[$k] ?? ''); }
 ?>
@@ -109,6 +175,51 @@ function s($k){ global $student; return htmlspecialchars($student[$k] ?? ''); }
     margin-top:1rem;
 }
 .btn-row .btn{border-radius:999px;}
+
+/* ===== HOSTEL UI FIX ===== */
+.hostel-section {
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    background: #f8faff;
+    border-radius: 12px;
+    border: 1px solid #e2e8ff;
+}
+
+.hostel-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #2a2a8c;
+    margin-bottom: 1rem;
+}
+
+/* force hostel layout 2-column kiri */
+.hostel-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem 1.25rem;
+}
+
+/* pastikan semua select align kiri */
+.hostel-grid .form-group {
+    margin: 0;
+}
+
+.hostel-grid select {
+    background-color: #fff;
+}
+
+/* responsive (mobile) */
+@media (max-width: 768px) {
+    .hostel-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+#house-group {
+    display: none;
+}
+
+
 </style>
 
 <div class="container">
@@ -119,6 +230,7 @@ function s($k){ global $student; return htmlspecialchars($student[$k] ?? ''); }
 <form method="post">
 
 <div class="edit-row">
+
 
 <div class="form-group full-row">
 <label>Full Name</label>
@@ -232,6 +344,79 @@ function s($k){ global $student; return htmlspecialchars($student[$k] ?? ''); }
 <label>Address</label>
 <input type="text" name="address" value="<?= s('address') ?>">
 </div>
+</div>
+
+<div class="hostel-section">
+    <div class="hostel-title">Hostel Assignment</div>
+
+    <div class="hostel-grid">
+
+        <!-- BUILDING -->
+        <div class="form-group">
+            <label>Building</label>
+            <select id="building" class="form-control">
+                <option value="">-- Select Building --</option>
+                <?php
+                $bq = $conn->query("SELECT building_id, building_name FROM building");
+                while ($b = $bq->fetch_assoc()):
+                ?>
+                    <option value="<?= $b['building_id'] ?>">
+                        <?= $b['building_name'] ?>
+                    </option>
+                <?php endwhile; ?>
+            </select>
+        </div>
+
+        <!-- BLOCK -->
+        <div class="form-group">
+            <label>Block</label>
+            <select id="block" class="form-control" disabled>
+                <option>-- Select Building First --</option>
+            </select>
+        </div>
+
+        <!-- LEVEL -->
+        <div class="form-group">
+            <label>Level</label>
+            <select id="level" class="form-control" disabled>
+                <option>-- Select Block First --</option>
+            </select>
+        </div>
+
+        <!-- HOUSE (WRAPPED ❗) -->
+        <div class="form-group" id="house-group">
+            <label>House</label>
+            <select id="house" class="form-control" disabled>
+                <option>-- Select Level First --</option>
+            </select>
+        </div>
+
+        <!-- ROOM -->
+        <div class="form-group">
+            <label>Room</label>
+            <select id="room" class="form-control" disabled>
+                <option>-- Select Level First --</option>
+            </select>
+        </div>
+
+        <!-- BED -->
+        <div class="form-group">
+            <label>Bed</label>
+            <select name="bed_key" id="bed" class="form-control" disabled>
+                <option>-- Select Room First --</option>
+            </select>
+        </div>
+
+        <!-- PAYMENT -->
+        <div class="form-group">
+            <label>Payment Status</label>
+            <select name="status_payment" class="form-control">
+                <option value="Pending">Pending</option>
+                <option value="Paid">Paid</option>
+                <option value="Cancelled">Cancelled</option>
+            </select>
+        </div>
+</div>
 
 </div>
 
@@ -305,6 +490,112 @@ if (programmeSelect) {
     });
 }
 </script>
+<script>
+const building = document.getElementById('building');
+const block    = document.getElementById('block');
+const level    = document.getElementById('level');
+const house    = document.getElementById('house');
+const room     = document.getElementById('room');
+const bed      = document.getElementById('bed');
+
+const houseGroup = document.getElementById('house-group');
+
+// RESET FUNCTION
+function resetSelect(el, text) {
+    el.innerHTML = `<option>${text}</option>`;
+    el.disabled = true;
+}
+
+// BUILDING → BLOCK
+building.onchange = () => {
+    resetSelect(block, '-- Select Building First --');
+    resetSelect(level, '-- Select Block First --');
+    resetSelect(room, '-- Select Level First --');
+    resetSelect(bed, '-- Select Room First --');
+
+    houseGroup.style.display = 'none';
+    resetSelect(house, '-- Select Level First --');
+
+    fetch(`get_blocks.php?building_id=${building.value}`)
+        .then(res => res.text())
+        .then(html => {
+            block.innerHTML = '<option>-- Select Block --</option>' + html;
+            block.disabled = false;
+        });
+};
+
+// BLOCK → LEVEL
+block.onchange = () => {
+    resetSelect(level, '-- Select Block First --');
+    resetSelect(room, '-- Select Level First --');
+    resetSelect(bed, '-- Select Room First --');
+
+    houseGroup.style.display = 'none';
+    resetSelect(house, '-- Select Level First --');
+
+    fetch(`get_levels.php?block_id=${block.value}`)
+        .then(res => res.text())
+        .then(html => {
+            level.innerHTML = '<option>-- Select Level --</option>' + html;
+            level.disabled = false;
+        });
+};
+
+// LEVEL → CHECK ADA HOUSE ATAU TAK
+level.onchange = () => {
+    resetSelect(room, '-- Select Level First --');
+    resetSelect(bed, '-- Select Room First --');
+
+    // check DB ada house ke
+    fetch(`get_houses.php?block_id=${block.value}&level=${level.value}`)
+        .then(res => res.text())
+        .then(html => {
+            if (html.trim() !== '') {
+                // ✅ ADA HOUSE
+                houseGroup.style.display = 'block';
+                house.innerHTML = '<option>-- Select House --</option>' + html;
+                house.disabled = false;
+            } else {
+                // ❌ TAK ADA HOUSE → TERUS ROOM
+                houseGroup.style.display = 'none';
+
+                fetch(`get_rooms.php?block_id=${block.value}&level=${level.value}`)
+                    .then(r => r.text())
+                    .then(h => {
+                        room.innerHTML = '<option>-- Select Room --</option>' + h;
+                        room.disabled = false;
+                    });
+            }
+        });
+};
+
+// HOUSE → ROOM
+house.onchange = () => {
+    resetSelect(room, '-- Select House First --');
+    resetSelect(bed, '-- Select Room First --');
+
+    fetch(`get_rooms.php?block_id=${block.value}&level=${level.value}&house=${house.value}`)
+        .then(res => res.text())
+        .then(html => {
+            room.innerHTML = '<option>-- Select Room --</option>' + html;
+            room.disabled = false;
+        });
+};
+
+// ROOM → BED
+room.onchange = () => {
+    resetSelect(bed, '-- Select Room First --');
+
+    fetch(`get_beds.php?room_id=${room.value}`)
+        .then(res => res.text())
+        .then(html => {
+            bed.innerHTML = '<option>-- Select Bed --</option>' + html;
+            bed.disabled = false;
+        });
+};
+</script>
+
+
 
 </main>
 

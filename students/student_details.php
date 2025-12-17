@@ -34,6 +34,31 @@ if (!$stmt) {
     die("SQL error");
 }
 
+$roomSql = "
+SELECT
+    bld.building_name,
+    blk.block_name,
+    r.no_house,
+    r.room_no,
+    r.level,
+    bkg.bed_no,
+    bkg.status_payment
+FROM booking bkg
+JOIN room r       ON bkg.room_id = r.room_id
+JOIN block blk    ON r.block_id = blk.block_id
+JOIN building bld ON blk.building_id = bld.building_id
+WHERE bkg.student_id = ?
+LIMIT 1
+";
+
+$roomStmt = $conn->prepare($roomSql);
+$roomStmt->bind_param("s", $student_id);
+$roomStmt->execute();
+$roomResult = $roomStmt->get_result();
+$roomInfo = $roomResult->fetch_assoc();
+$roomStmt->close();
+
+
 /* 🔴 student_id IS STRING */
 $stmt->bind_param("s", $student_id);
 $stmt->execute();
@@ -107,7 +132,7 @@ $back_url = "/workshop2/students/student.php";
 .profile-details {
     display:grid;
     grid-template-columns:repeat(2,1fr);
-    gap:1rem 4rem;
+    gap:1rem 2rem;
     margin-top:1.5rem;
 }
 .detail-title {
@@ -122,6 +147,68 @@ $back_url = "/workshop2/students/student.php";
 .student-back {
     margin-bottom:.75rem;
 }
+
+.payment-badge {
+    display: inline-block;
+    padding: .25rem .65rem;
+    border-radius: 999px;
+    font-size: .75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.payment-badge.pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.payment-badge.paid {
+    background: #d4edda;
+    color: #155724;
+}
+
+.payment-badge.cancelled {
+    background: #f8d7da;
+    color: #721c24;
+}
+.full-row {
+    grid-column: 1 / -1;
+}
+
+.hostel-grid-info {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem 2rem;
+    margin-top: .75rem;
+}
+
+/* ===== HOSTEL CARD ===== */
+.hostel-card {
+    margin-top: 1.25rem;
+    padding: 1.25rem 1.5rem;
+    background: #f8faff;
+    border: 1px solid #e3e9ff;
+    border-radius: 12px;
+}
+
+.hostel-card .detail-title {
+    margin-bottom: .75rem;
+}
+
+.hostel-grid-info {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem 2rem;
+}
+
+/* responsive */
+@media (max-width: 768px) {
+    .hostel-grid-info {
+        grid-template-columns: 1fr;
+    }
+}
+
+
 </style>
 
 <div class="container-fluid">
@@ -195,6 +282,7 @@ $back_url = "/workshop2/students/student.php";
                 <div class="detail-value"><?= s($student,'faculty') ?></div>
             </div>
 
+
             <div>
                 <div class="detail-title">Course</div>
                 <div class="detail-value"><?= s($student,'course') ?></div>
@@ -210,8 +298,55 @@ $back_url = "/workshop2/students/student.php";
                 <div class="detail-value"><?= s($student,'email') ?: '—' ?></div>
             </div>
 
+<div class="hostel-wrapper full-row hostel-card">
+    <div class="detail-title">Hostel Information</div>
+
+    <div class="hostel-grid-info">
+        <div>
+            <div class="detail-title">Building</div>
+            <div class="detail-value"><?= $roomInfo['building_name'] ?? '—' ?></div>
+        </div>
+<div>
+    <div class="detail-title">
+        <?= !empty($roomInfo['no_house']) ? 'House / Block' : 'Block' ?>
+    </div>
+
+<div class="detail-value">
+    <?= htmlspecialchars($roomInfo['block_name'] ?? '—') ?>
+    <?php if (!empty($roomInfo['no_house'])): ?>
+        &nbsp;–&nbsp;<?= htmlspecialchars($roomInfo['no_house']) ?>
+    <?php endif; ?>
+</div>
+
+</div>
+
+
+        <div>
+            <div class="detail-title">Level</div>
+            <div class="detail-value"><?= $roomInfo['level'] ?? '—' ?></div>
+        </div>
+
+        <div>
+            <div class="detail-title">Room</div>
+            <div class="detail-value"><?= $roomInfo['room_no'] ?? '—' ?></div>
+        </div>
+
+        <div>
+            <div class="detail-title">Bed</div>
+            <div class="detail-value"><?= $roomInfo['bed_no'] ?? '—' ?></div>
+        </div>
+
+        <div>
+            <div class="detail-title">Payment Status</div>
+            <div class="detail-value">
+                <span class="payment-badge <?= strtolower($roomInfo['status_payment'] ?? 'pending') ?>">
+                    <?= $roomInfo['status_payment'] ?? 'Pending' ?>
+                </span>
+            </div>
         </div>
     </div>
+</div>
+
 </div>
 </main>
 

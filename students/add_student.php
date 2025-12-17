@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($q && $q->num_rows > 0) {
         $lastId = $q->fetch_assoc()['student_id'];
-        $number = (int) substr($lastId, 5); // ambil xxxxx
+        $number = (int) substr($lastId, 5);
         $number++;
     } else {
         $number = 1;
@@ -41,21 +41,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email          = $_POST['email'];
     $address        = $_POST['address'];
 
-    // AUTO FACULTY FROM COURSE
-    if (strpos($course, 'Computer') !== false || strpos($course, 'Information Technology') !== false) {
-        $faculty = "FTMK";
-    } elseif (strpos($course, 'Electrical') !== false || strpos($course, 'Electronics') !== false || strpos($course, 'Mechatronics') !== false) {
-        $faculty = "FKE";
-    } elseif (strpos($course, 'Mechanical') !== false || strpos($course, 'Automotive') !== false || strpos($course, 'Industrial') !== false) {
-        $faculty = "FKM";
-    } elseif (strpos($course, 'Manufacturing') !== false || strpos($course, 'Product') !== false || strpos($course, 'Materials') !== false) {
-        $faculty = "FKP";
-    } elseif (strpos($course, 'Technology') !== false) {
-        $faculty = "FTKMP";
-    } else {
-        $faculty = NULL;
-    }
+    // =========================
+    // FACULTY MAPPING (FULL)
+    // =========================
+    $programmeToFaculty = [
+        "Bachelor of Computer Science (Artificial Intelligence)" => "FTMK",
+        "Bachelor of Computer Science (Data Engineering)" => "FTMK",
+        "Bachelor of Computer Science (Software Development)" => "FTMK",
+        "Bachelor of Computer Science (Cybersecurity)" => "FTMK",
+        "Bachelor of Information Technology (Information Security)" => "FTMK",
+        "Bachelor of Information Technology (Software Engineering)" => "FTMK",
+        "Diploma in Computer Science" => "FTMK",
+        "Diploma in Information Technology" => "FTMK",
 
+        "Bachelor of Electrical Engineering" => "FKE",
+        "Bachelor of Electronics Engineering" => "FKE",
+        "Bachelor of Mechatronics Engineering" => "FKE",
+        "Diploma in Electrical Engineering" => "FKE",
+        "Diploma in Electronics Engineering" => "FKE",
+
+        "Bachelor of Mechanical Engineering" => "FKM",
+        "Bachelor of Manufacturing Engineering" => "FKM",
+        "Bachelor of Industrial Engineering" => "FKM",
+        "Bachelor of Automotive Engineering" => "FKM",
+        "Diploma in Mechanical Engineering" => "FKM",
+        "Diploma in Industrial Engineering" => "FKM"
+    ];
+
+    $faculty = $programmeToFaculty[$course] ?? "-";
+
+    // =========================
+    // INSERT
+    // =========================
     $sql = "INSERT INTO student (
                 student_id,
                 full_name,
@@ -82,7 +99,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $address
     );
 
-    $stmt->execute();
+    if (!$stmt->execute()) {
+        die("<b>DB INSERT ERROR:</b> " . $stmt->error);
+    }
 
     header("Location: student_details.php?id=".$student_id);
     exit;
@@ -140,7 +159,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <label>Matric Number</label>
     <input type="text" placeholder="Auto generated" disabled>
 </div>
-
 
 <div class="form-group">
 <label>Full Name</label>
