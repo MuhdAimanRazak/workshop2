@@ -228,7 +228,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <div class="btn-row">
-<a href="student.php" class="btn btn-outline-secondary">Cancel</a>
+<a href="add_student_choice.php" class="btn btn-outline-secondary">Cancel</a>
 <button type="submit" class="btn btn-success">Add Student</button>
 </div>
 

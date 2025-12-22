@@ -337,12 +337,17 @@ $back_url = "/workshop2/students/student.php";
         </div>
 
         <div>
-            <div class="detail-title">Payment Status</div>
-            <div class="detail-value">
-                <span class="payment-badge <?= strtolower($roomInfo['status_payment'] ?? 'pending') ?>">
-                    <?= $roomInfo['status_payment'] ?? 'Pending' ?>
-                </span>
-            </div>
+<div class="detail-title">Payment Status</div>
+<div class="detail-value">
+    <?php if (empty($roomInfo) || empty($roomInfo['status_payment'])): ?>
+        <span class="payment-badge dash">—</span>
+    <?php else: ?>
+        <span class="payment-badge <?= strtolower($roomInfo['status_payment']) ?>">
+            <?= htmlspecialchars($roomInfo['status_payment']) ?>
+        </span>
+    <?php endif; ?>
+</div>
+
         </div>
     </div>
 </div>

@@ -83,7 +83,7 @@ if (!isset($conn) || !$conn) {
                 </button>
             </div>
                 <!-- Add Student Button -->
-    <a href="add_student.php" class="btn btn-success rounded-pill px-4 py-2">
+    <a href="add_student_choice.php" class="btn btn-success rounded-pill px-4 py-2">
         <i class="fas fa-plus me-1"></i> Add Student
     </a>
         </div>
