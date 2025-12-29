@@ -237,10 +237,10 @@ $back_url = "/workshop2/students/student.php";
         Edit
     </a>
 
-    <a href="change_student_password.php?id=<?= s($student,'student_id') ?>"
+     <a href="change_student_password.php?id=<?= s($student,'student_id') ?>"
        class="btn btn-primary change-pass-btn">
-        Change Password
-    </a>
+        Reset Password
+    </a> 
 
     <form method="post" action="delete_student.php"
           onsubmit="return confirm('Are you sure you want to delete this student?');">
