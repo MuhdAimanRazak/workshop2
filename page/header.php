@@ -57,12 +57,12 @@ if (!isset($_SESSION['staff_ic'])) {
                                     <div class="sb-nav-link-icon"><i class="fa-solid fa-house"></i></div>Dashboard
                                 </a>
                                 <div class="sb-sidenav-menu-heading">Data</div>
-                                <a class="nav-link" href="../building/building.php">
+                                <a class="nav-link" href="../students/building_section.php">
                                     <div class="sb-nav-link-icon"><i class="fa-regular fa-credit-card"></i></div>Building
                                 </a>
-                                <a class="nav-link" href="">
+                                <a class="nav-link" href="../students/room_section.php">
                                     <div class="sb-nav-link-icon"><i class="fa-regular fa-rectangle-list"></i></div>
-                                    Reservation
+                                    Room
                                 </a>
                                 <a class="nav-link" href="">
                                     <div class="sb-nav-link-icon"><i class="fa-solid fa-person-shelter"></i></div>Facilities
@@ -70,7 +70,7 @@ if (!isset($_SESSION['staff_ic'])) {
                                 <a class="nav-link" href="../students/student_section.php">
                                     <div class="sb-nav-link-icon"><i class="fa-solid fa-user"></i></div>Student
                                 </a>
-                                <a class="nav-link" href="../staff/staff.php">
+                                <a class="nav-link" href="../staff/staff_section.php">
                                     <div class="sb-nav-link-icon"><i class="fa-solid fa-clipboard-user"></i></div>Staff
                                 </a>
                                 <div class="sb-sidenav-menu-heading">Report</div>

@@ -1,67 +1,79 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>MyHostel – Log Masuk</title>
-    <link rel="stylesheet" type="text/css" href="style.css">
-  </head>
-<script>
-function togglePassword() {
-    const passwordField = document.getElementById("katalaluan");
-
-    if (passwordField.type === "password") {
-        passwordField.type = "text";
-    } else {
-        passwordField.type = "password";
-    }
-}
-</script>
-
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MyHostel – Login</title>
+    <link rel="stylesheet" href="style.css">
+    <script>
+        function togglePassword() {
+            const p = document.getElementById("password");
+            p.type = p.type === "password" ? "text" : "password";
+        }
+    </script>
+</head>
 <body>
 
-  <div class="wrapper">
+<!-- OUTER DEVICE BOX -->
+<div class="device">
 
-    <!-- Header Box -->
-    <div class="header-box">
-      <h1>MyHostel</h1>
+    <!-- TOP BAR -->
+    <div class="top-bar">
+        <span>myHostel</span>
     </div>
 
-    <!-- Login Box -->
-    <div class="login-box">
-      <h2>Login</h2>
+    <!-- PAGE CONTENT -->
+    <div class="page">
 
-      <form method="post" action="login.php">
-
-        <div class="user-box">
-          <input type="text" id="idpengguna" name="idpengguna" required>
-          <label for="idpengguna">Username</label>
+        <!-- BANNER -->
+        <div class="banner">
+            <img src="../banner.png" alt="Banner">
         </div>
 
-        <div class="user-box password-box">
-          <input type="password" id="katalaluan" name="katalaluan" required>
-          <label for="katalaluan">Password</label>
-          <span class="toggle-password" onclick="togglePassword()">👁️</span>
+        <!-- LOGIN CARD -->
+        <div class="card">
+
+            <div class="card-left">
+                <img src="../hostel.png" alt="Hostel">
+            </div>
+
+            <div class="card-right">
+                <img src="../logo.png" class="login-logo" alt="Logo">
+
+                <form method="post" action="log/login.php">
+
+                    <div class="field">
+                        <input type="text" name="username" required>
+                        <span>Username</span>
+                    </div>
+
+                    <div class="field">
+                        <input type="password" name="password" id="password" required>
+                        <span>Password</span>
+                        <i onclick="togglePassword()">👁️</i>
+                    </div>
+
+                    <div class="row">
+                        <label><input type="checkbox" name="remember"> Remember Me</label>
+                        <a href="#">Forgot Password?</a>
+                    </div>
+
+                    <button type="submit">Log In</button>
+                </form>
+            </div>
+
         </div>
 
-        <button type="submit" name="login-btn">Login</button>
-
-        <!-- Cancel button MUST be inside the .login-box but OUTSIDE the form -->
-        <a href="../index.php" class="btn1">Cancel</a>
-
-      </form>
+        <!-- DECORATIVE CORNER IMAGES -->
+        <img src="../bg-left.png" class="decor-left" alt="">
+        <img src="../bg-right.png" class="decor-right" alt="">
 
     </div>
-<div class="footer-info">
-    Copyright &copy; UTEM 2025  
-    &middot;  
-    <a href="#">Privacy Policy</a>
-    &middot;  
-    <a href="#">Terms &amp; Conditions</a>
 </div>
 
-  </div>
-
-
+<!-- FOOTER -->
+<div class="footer">
+    Copyright © UTEM 2025 · Privacy Policy · Terms & Conditions
+</div>
 
 </body>
-
 </html>

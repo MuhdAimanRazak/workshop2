@@ -1,232 +1,218 @@
-body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    color: #6f42c1; /* soft purple text */
-    background-color: #c4c4c4; /* WHITE background */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", Arial, sans-serif;
 }
-/* Wrapper to center both boxes vertically */
-.wrapper {
+
+body {
+    background: #e6e8ee;
+    padding: 30px 0;
+}
+html, body {
+    background: #ffffff !important;
+    margin: 0;
+    padding: 0;
+}
+/* OUTER DEVICE FRAME */
+.device {
+    width: 100%;
+    max-width: 1800px;      /* 🔑 HAD SUPAYA TAK TERLALU PANJANG */
+    min-height: 650px;
+    margin: auto;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 20px 40px rgba(0,0,0,.25);
+    overflow: hidden;
+
+    transform: scale(1);        
+    transform-origin: top center;  /* kekal tengah */
+}
+
+
+/* TOP BAR */
+.top-bar {
+    background: #243f8f;
+    height: 55px;
+    display: flex;
+    align-items: center;
+    padding: 0 25px;
+    color: #fff;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+/* PAGE */
+.page {
+    background: #fff;
+    position: relative;
+    overflow: hidden;
+
+    /* 🔑 KUNCI LAYOUT */
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    min-height: 100vh;
+
+    padding-bottom: 140px;   /* ruang sebelum bottom image */
 }
 
-/* Header: MyHostel Box */
-.header-box {
-    width: 350px;
-    padding: 18px;
-    margin-bottom: 15px;          /* space above login box */
-    background: #f8f0ff;          /* soft lavender */
-    border: 2px solid rgba(160, 120, 220, 0.4);
-    border-radius: 12px;
+/* BANNER */
+.banner {
     text-align: center;
-    box-shadow: 0 0 10px rgba(175, 134, 225, 0.4);
-    animation: glow 1.2s ease-in-out infinite alternate;
+    margin-top: 25px;
+    margin-bottom: 20px;
 }
 
-.header-box h1 {
-    margin: 0;
-    font-size: 30px;
-    font-weight: 800;
-    color: #5e32a8;               /* strong purple */
-    letter-spacing: 1px;
+.banner img {
+    width: 680px;
 }
 
-
-
-.login-box {
-    border: 2px solid rgba(175, 134, 225, 0.4);
-    box-shadow: 0 0 10px rgba(175, 134, 225, 0.4);
-    animation: glow 1.2s ease-in-out infinite alternate;
-    width: 350px;
-    height: auto;
-    padding: 40px;
-    background-color: #f4eaff;
-    border-radius: 10px;
-}
-
-
-.text {
-  text-decoration: none;
-  font-weight: bold;
-  color: #6f42c1;
-}
-
-.btn1 {
-  display: block;
-  width: 100%;
-  padding: 10px;
-  background: #ffffff;
-  border: 2px solid #c7b5e8; /* soft purple border */
-  border-radius: 5px;
-  text-align: center;
-  cursor: pointer;
-  margin-top: 5px;
-  transition: 0.3s;
-  color: #6f42c1;
-}
-
-.btn1:hover {
-  background: #e8d9ff;
-  color: #5a2ca0;
-}
-
-@keyframes glow {
-    from {
-        border-color: rgba(175, 134, 225, 0.4);
-        box-shadow: 0 0 10px rgba(175, 134, 225, 0.4);
-    }
-    to {
-        border-color: rgba(175, 134, 225, 1);
-        box-shadow: 0 0 20px rgba(175, 134, 225, 1);
-    }
-}
-
-.login-box h2 {
-    margin-bottom: 30px;
-    color: #5a2ca0; /* stronger purple */
-    text-align: center;
-    text-transform: uppercase;
-}
-
-.user-box {
+/* LOGIN CARD */
+.card {
+    width: 720px;
+    height: 420px;
+    display: flex;
+    background: #fff;
+    box-shadow: 0 10px 30px rgba(0,0,0,.18);
+    z-index: 2;
     position: relative;
-    margin-bottom: 30px;
 }
 
-.user-box input {
+/* LEFT IMAGE */
+.card-left img {
+    width: 320px;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* RIGHT LOGIN */
+.card-right {
+    width: 400px;
+    padding: 35px;
+    text-align: center;
+}
+
+.login-logo {
+    width: 120px;
+    margin-bottom: 15px;
+}
+
+/* FORM */
+.field {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.field input {
     width: 100%;
-    padding: 10px 0;
-    font-size: 16px;
-    color: #5a2ca0;
-    border: none;
+    padding: 10px 35px 10px 10px;
+    border: 1px solid #ccc;
     outline: none;
-    background: transparent;
-    border-bottom: 1px solid #6f42c1; /* purple underline */
 }
 
-.user-box label {
+.field span {
     position: absolute;
-    top: 0;
-    left: 0;
-    font-size: 16px;
-    color: #6f42c1;
-    pointer-events: none;
-    transition: 0.5s;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 13px;
+    color: #888;
 }
 
-.user-box input:focus~label,
-.user-box input:valid~label {
-    top: -20px;
-    left: 0;
-    color: #9b59ff; /* bright purple accent */
+.field input:focus + span,
+.field input:valid + span {
+    display: none;
+}
+
+.field i {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    cursor: pointer;
+    transform: translateY(-50%);
+}
+
+/* OPTIONS */
+.row {
+    display: flex;
+    justify-content: space-between;
     font-size: 12px;
+    margin-bottom: 20px;
 }
 
-button[type="submit"] {
-    display: block;
+.row a {
+    color: #5b6df5;
+    text-decoration: none;
+}
+
+/* BUTTON */
+button {
     width: 100%;
     padding: 10px;
-    font-size: 16px;
-    font-weight: bold;
-    color: #fff;
-    background-color: #9b59ff; /* soft-medium purple */
+    background: #8a97f5;
     border: none;
-    border-radius: 5px;
+    color: white;
     cursor: pointer;
-    transition: 0.3s;
+    border-radius: 4px;
 }
 
-button[type="submit"]:hover {
-    background-color: #6f42c1;
+button:hover {
+    background: #6e7de8;
 }
 
-/* Website Name Styling */
-.site-name {
-    margin: 0;
-    margin-bottom: 10px;
-    font-size: 32px;
-    font-weight: bold;
-    text-align: center;
-    color: #5a2ca0; /* soft purple */
-    letter-spacing: 1px;
-}
-
-/* Fix cancel button as link-style button */
-a.btn1 {
-    display: block;
-    width: 100%;           /* same width as login button */
-    padding: 10px;         /* same padding */
-    margin-top: 10px;
-    text-decoration: none;
-    background: #ffffff;
-    border: 2px solid #c7b5e8;
-    border-radius: 5px;    /* same rounded corners */
-    text-align: center;
-    font-weight: bold;
-    color: #6f42c1;
-    transition: 0.3s;
-    cursor: pointer;
-    box-sizing: border-box; /* ensures perfect width match */
-}
-
-
-a.btn1:hover {
-    background: #e8d9ff;
-    color: #5a2ca0;
-}
-/* Position the eye icon inside the password box */
-.password-box {
-    position: relative;
-}
-
-.toggle-password {
+/* DECORATIVE CORNER IMAGES */
+.decor-left {
     position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 350px;
+    opacity: 0.8;
+    pointer-events: none;
+}
+
+.decor-right {
+    position: absolute;
+    bottom: 0;
     right: 0;
-    top: 8px;
-    font-size: 18px;
-    cursor: pointer;
-    color: #6f42c1;
-    user-select: none;
+    width: 350px;
+    opacity: 0.8;
+    pointer-events: none;
 }
 
-.toggle-password:hover {
-    color: #9b59ff;
+/* RESPONSIVE */
+@media (max-width: 768px) {
+
+    .device {
+        width: 95%;          /* 🔑 FIX: bukan 1000px */
+        min-height: auto;
+    }
+
+    .banner img {
+        width: 90%;
+    }
+
+    .card {
+        width: 90%;
+        flex-direction: column;
+        height: auto;
+    }
+
+    .card-left img {
+        width: 100%;
+        height: 200px;
+    }
+
+    .decor-left,
+    .decor-right {
+        width: 160px;
+        opacity: 0.15;
+    }
 }
-.footer-info {
-    margin-top: 25px;
+
+/* FOOTER */
+.footer {
     text-align: center;
-    font-size: 14px;
-    color: #6f42c1;
-    opacity: 0.9;
-}
-
-.footer-line {
-    width: 80%;
-    height: 1px;
-    background: rgba(224, 163, 204, 0.5);
-    margin: 0 auto 10px auto;
-    border-radius: 2px;
-    box-shadow: 0 0 6px rgba(224, 163, 204, 0.5);
-}
-
-.footer-info p {
-    margin: 5px 0;
-}
-
-.footer-links a {
-    color: #6f42c1;
-    text-decoration: none;
-    font-weight: bold;
-    transition: 0.3s;
-}
-
-.footer-links a:hover {
-    color: #a14dcf;
-    text-shadow: 0 0 6px rgba(161,77,207,0.5);
-    text-decoration: underline;
+    font-size: 12px;
+    margin-top: 20px;
+    color: #777;
 }

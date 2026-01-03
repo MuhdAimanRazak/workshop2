@@ -4,7 +4,7 @@ include("../page/header.php");
 
 <style>
 
-    /* ===============================
+/* ===============================
    FORCE FULL WHITE BACKGROUND
 ================================ */
 html, body {
@@ -12,18 +12,18 @@ html, body {
     margin: 0;
     padding: 0;
 }
+
 /* ===============================
-   WHITE WRAPPER (MATCH student.php)
+   WHITE WRAPPER 
 ================================ */
 .student-wrapper {
     background: #ffffff;
     border-radius: 24px;
-    padding: 3.5rem 3rem;
-    margin-top: 0rem;
+    padding: 1.5rem 3rem;  
+    margin-top: 1rem;
     margin-bottom: 2rem;
-    padding-bottom: 12rem;  
+    padding-bottom: 15rem;  
     box-shadow: 0 12px 30px rgba(0,0,0,.08);
-
 
     width: 100%;
     max-width: 100%;
@@ -34,26 +34,28 @@ html, body {
 /* ===============================
    STUDENT DIRECTORY BANNER
 ================================ */
-    .student-directory-banner {
-        margin-top: -6rem;
-        margin-bottom: -17rem;
-        text-align: center;
-        display: flex;
-        justify-content: center;
-    }
+.student-directory-banner {
+    margin-top: -6rem;
+    margin-bottom: -5rem;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+}
 
-    .student-directory-banner img {
-        max-width: 650px;
-        width: 100%;
-        height: auto;
-    }
-
+.student-directory-banner img {
+    max-width: 650px;
+    width: 100%;
+    height: auto;
+}
 
 /* ===============================
    STUDENT SECTION
 ================================ */
 .student-section {
-    margin-top: 10rem;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* GRID LAYOUT */
@@ -97,14 +99,26 @@ html, body {
     line-height: 1.4;
 }
 
-/* IMAGE (BIGGER ICON) */
+/* IMAGE */
 .student-card img {
     width: 140px;
     height: auto;
-    opacity: 1;
     position: absolute;
     bottom: 15px;
-    right: 10px;
+    right: 16px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+    .student-card-grid {
+        grid-template-columns: repeat(2, 220px);
+    }
+}
+
+@media (max-width: 520px) {
+    .student-card-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* ===============================
@@ -136,28 +150,16 @@ html, body {
     }
 }
 
-/* RESPONSIVE */
-@media (max-width: 900px) {
-    .student-card-grid {
-        grid-template-columns: repeat(2, 220px);
-    }
-}
-
-@media (max-width: 520px) {
-    .student-card-grid {
-        grid-template-columns: 1fr;
-    }
-}
 </style>
 
-<main class="container-fluid px-4">
+<main class="container-fluid px-0">
 
     <!-- WHITE WRAPPER -->
     <div class="student-wrapper">
 
         <!-- STUDENT DIRECTORY BANNER -->
         <div class="student-directory-banner">
-            <img src="../student-banner.png" alt="Student Directory">
+            <img src="../building-banner.png" alt="building-banner">
         </div>
 
         <!-- STUDENT SECTION -->
@@ -165,43 +167,28 @@ html, body {
 
             <div class="student-card-grid">
 
-                <!-- SATRIA -->
-                <a href="student_by_building.php?building=satria" class="student-card">
-                    <span class="card-text">SATRIA</span>
-                    <img src="../building-logo.png" alt="Satria">
+                <!-- View All Building -->
+                <a href="building_all.php" class="student-card">
+                    <span class="card-text">View All Building</span>
+                    <img src="../building-logo.png" alt="Building">
                 </a>
 
-                <!-- LESTARI -->
-                <a href="student_by_building.php?building=lestari" class="student-card">
-                    <span class="card-text">LESTARI</span>
-                    <img src="../building-logo.png" alt="Lestari">
+                <!-- View Active Building -->
+                <a href="building_Active.php" class="student-card">
+                    <span class="card-text">View Active Building</span>
+                    <img src="../building-logo.png" alt="Building">
                 </a>
 
-                <!-- AL-JAZARI -->
-                <a href="student_by_building.php?building=aljazari" class="student-card">
-                    <span class="card-text">AL-JAZARI</span>
-                    <img src="../building-logo.png" alt="Al-Jazari">
-                </a>
-
-                <!-- VIEW ALL -->
-                <a href="student.php" class="student-card">
-                    <span class="card-text">
-                        VIEW ALL<br>STUDENTS
-                    </span>
-                    <img src="../students.png" alt="All Students">
-                </a>
-
-                <!-- ARCHIVED -->
-                <a href="archived_students.php" class="student-card">
-                    <span class="card-text">
-                        ARCHIVED<br>STUDENTS
-                    </span>
-                    <img src="../archive.png" alt="Archived Students">
+                <!-- View Inactive Building -->
+                <a href="building_Inactive.php" class="student-card">
+                    <span class="card-text">View Inactive Building</span>
+                    <img src="../building-logo.png" alt="Building">
                 </a>
 
             </div>
 
         </div>
+
         <!-- Decorative Images -->
         <img src="../background-left.png" class="decor-left" alt="">
         <img src="../background-right.png" class="decor-right" alt="">
