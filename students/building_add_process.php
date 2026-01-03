@@ -2,7 +2,8 @@
 include("../config/config.php");
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header("Location: building.php");
+    header("Location: /workshop2/building/building.php?success=1");
+
     exit;
 }
 

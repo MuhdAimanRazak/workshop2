@@ -1,4 +1,4 @@
-<?php
+<?php  
 include("../page/header.php");
 include("../config/config.php");
 
@@ -10,42 +10,14 @@ if (!isset($conn) || !$conn) {
         Database connection not available.
     </div></div>');
 }
-
-/* =========================
-   GET BUILDING ID
-========================= */
-$building_id = isset($_GET['building_id']) ? (int)$_GET['building_id'] : 0;
-
-if ($building_id <= 0) {
-    die('<div class="container mt-4"><div class="alert alert-warning">
-        Invalid building selected.
-    </div></div>');
-}
-
-/* =========================
-   FETCH BUILDING NAME
-========================= */
-$stmtB = $conn->prepare("
-    SELECT building_name
-    FROM building
-    WHERE building_id = ?
-    LIMIT 1
-");
-$stmtB->bind_param("i", $building_id);
-$stmtB->execute();
-$resB = $stmtB->get_result();
-
-if ($resB->num_rows === 0) {
-    die('<div class="container mt-4"><div class="alert alert-warning">
-        Building not found.
-    </div></div>');
-}
-
-$pageTitle = strtoupper($resB->fetch_assoc()['building_name']);
 ?>
 
 <main>
 <style>
+
+/* ===============================
+   FORCE FULL WHITE BACKGROUND
+================================ */
 html, body {
     background: #ffffff !important;
     margin: 0;
@@ -57,23 +29,24 @@ html, body {
 }
 .table thead { background-color: #ffffff !important; }
 
-.student-banner {
-    margin-top: -6rem;
-    margin-bottom: -7rem;
-    text-align: center;
-    display: flex;
-    justify-content: center;
-}
-.student-banner img {
-    max-width: 650px;
-    width: 100%;
-    height: auto;
-}
+    .student-banner {
+        margin-top: -6rem;
+        margin-bottom: -7rem;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+    }
+
+    .student-banner img {
+        max-width: 650px;
+        width: 100%;
+        height: auto;
+    }
 
 .student-back { margin-top:.5rem; margin-bottom:.5rem; }
 .student-back a { text-decoration:none; color:#000; font-size:.95rem; }
 
-.student-search-wrapper { width:70%; }
+.student-search-wrapper { width:70%; position:relative; }
 .student-search-input { border-radius:50px; padding-right:3.2rem; height:48px; }
 
 .student-search-btn {
@@ -121,28 +94,18 @@ html, body {
 
     <!-- Title -->
     <h3 class="text-center fw-bold mb-3">
-        Students in <?= htmlspecialchars($pageTitle) ?>
+        All Inactive Students
     </h3>
 
-    <!-- Search + Download (ONLY CHANGE HERE) -->
+    <!-- Search -->
     <div class="d-flex justify-content-center mb-1">
-        <div class="student-search-wrapper d-flex align-items-center gap-2">
-
-            <div class="position-relative flex-grow-1">
-                <input id="studentSearch" type="text"
-                       class="form-control student-search-input"
-                       placeholder="Search here">
-                <button type="button" class="student-search-btn" onclick="applySearch()">
-                    <i class="fas fa-search"></i>
-                </button>
-            </div>
-
-            <a href="download_student_choice.php?building_id=<?= $building_id ?>"
-               class="btn btn-outline-primary rounded-circle"
-               style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;">
-                <i class="fas fa-download"></i>
-            </a>
-
+        <div class="student-search-wrapper">
+            <input id="studentSearch" type="text"
+                   class="form-control student-search-input"
+                   placeholder="Search here">
+            <button type="button" class="student-search-btn" onclick="applySearch()">
+                <i class="fas fa-search"></i>
+            </button>
         </div>
     </div>
 
@@ -159,28 +122,22 @@ html, body {
 
 <?php
 $sql = "
-SELECT DISTINCT
-    s.student_id,
-    s.full_name,
-    s.phone_no
-FROM student s
-JOIN booking bkg   ON s.student_id = bkg.student_id
-JOIN room r        ON bkg.room_id = r.room_id
-JOIN block blk     ON r.block_id = blk.block_id
-JOIN building bld  ON blk.building_id = bld.building_id
-WHERE bld.building_id = ?
-  AND s.student_status = 'active'
-ORDER BY s.full_name ASC
+SELECT
+    student_id,
+    full_name,
+    phone_no
+FROM student
+WHERE student_status = 'inactive'
+ORDER BY full_name ASC
 ";
 
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $building_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows === 0) {
     echo '<div class="alert alert-info text-center">
-        No students found in this building.
+        No inactive students found.
     </div>';
 } else {
 
@@ -196,14 +153,19 @@ if ($result->num_rows === 0) {
 
     $i = 1;
     while ($row = $result->fetch_assoc()) {
+        $id = $row['student_id'];
+        $name = htmlspecialchars($row['full_name']);
+        $phone = htmlspecialchars($row['phone_no']);
+        $details = "student_details.php?id=$id";
+
         echo "<tr>
             <td>$i</td>
-            <td class='text-start'>".htmlspecialchars($row['full_name'])."</td>
-            <td>{$row['student_id']}</td>
-            <td>{$row['phone_no']}</td>
+            <td class='text-start'>$name</td>
+            <td>$id</td>
+            <td>$phone</td>
             <td>
-                <a href='student_details.php?id={$row['student_id']}'
-                   class='btn btn-primary btn-sm rounded-pill px-3'>
+                <a href='$details'
+                   class='btn btn-secondary btn-sm rounded-pill px-3'>
                    More Details
                 </a>
             </td>

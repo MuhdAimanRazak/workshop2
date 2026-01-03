@@ -1,10 +1,18 @@
 <?php
 include("../page/header.php");
+include("../config/config.php");
+
+if (!isset($conn) || !$conn) {
+    die('<div class="container mt-4">
+            <div class="alert alert-danger">
+                Database connection not available.
+            </div>
+         </div>');
+}
 ?>
 
 <style>
-
-    /* ===============================
+/* ===============================
    FORCE FULL WHITE BACKGROUND
 ================================ */
 html, body {
@@ -12,6 +20,7 @@ html, body {
     margin: 0;
     padding: 0;
 }
+
 /* ===============================
    WHITE WRAPPER (MATCH student.php)
 ================================ */
@@ -23,8 +32,6 @@ html, body {
     margin-bottom: 2rem;
     padding-bottom: 12rem;  
     box-shadow: 0 12px 30px rgba(0,0,0,.08);
-
-
     width: 100%;
     max-width: 100%;
     position: relative;
@@ -34,20 +41,19 @@ html, body {
 /* ===============================
    STUDENT DIRECTORY BANNER
 ================================ */
-    .student-directory-banner {
-        margin-top: -6rem;
-        margin-bottom: -17rem;
-        text-align: center;
-        display: flex;
-        justify-content: center;
-    }
+.student-directory-banner {
+    margin-top: -6rem;
+    margin-bottom: -17rem;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+}
 
-    .student-directory-banner img {
-        max-width: 650px;
-        width: 100%;
-        height: auto;
-    }
-
+.student-directory-banner img {
+    max-width: 650px;
+    width: 100%;
+    height: auto;
+}
 
 /* ===============================
    STUDENT SECTION
@@ -83,13 +89,11 @@ html, body {
     position: relative;
 }
 
-/* HOVER EFFECT */
 .student-card:hover {
     transform: translateY(-6px);
     box-shadow: 0 18px 40px rgba(0,0,0,.2);
 }
 
-/* TEXT */
 .card-text {
     font-size: 1rem;
     font-weight: 800;
@@ -97,19 +101,14 @@ html, body {
     line-height: 1.4;
 }
 
-/* IMAGE (BIGGER ICON) */
 .student-card img {
     width: 140px;
-    height: auto;
-    opacity: 1;
     position: absolute;
     bottom: 15px;
     right: 10px;
 }
 
-/* ===============================
-   DECORATIVE CORNER IMAGES
-================================ */
+/* DECOR */
 .decor-left {
     position: absolute;
     bottom: 0;
@@ -128,15 +127,6 @@ html, body {
     pointer-events: none;
 }
 
-@media (max-width: 768px) {
-    .decor-left,
-    .decor-right {
-        width: 160px;
-        opacity: 0.1;
-    }
-}
-
-/* RESPONSIVE */
 @media (max-width: 900px) {
     .student-card-grid {
         grid-template-columns: repeat(2, 220px);
@@ -152,64 +142,70 @@ html, body {
 
 <main class="container-fluid px-4">
 
-    <!-- WHITE WRAPPER -->
-    <div class="student-wrapper">
+<div class="student-wrapper">
 
-        <!-- STUDENT DIRECTORY BANNER -->
-        <div class="student-directory-banner">
-            <img src="../student-banner.png" alt="Student Directory">
-        </div>
-
-        <!-- STUDENT SECTION -->
-        <div class="student-section">
-
-            <div class="student-card-grid">
-
-                <!-- SATRIA -->
-                <a href="student_by_building.php?building=satria" class="student-card">
-                    <span class="card-text">SATRIA</span>
-                    <img src="../building-logo.png" alt="Satria">
-                </a>
-
-                <!-- LESTARI -->
-                <a href="student_by_building.php?building=lestari" class="student-card">
-                    <span class="card-text">LESTARI</span>
-                    <img src="../building-logo.png" alt="Lestari">
-                </a>
-
-                <!-- AL-JAZARI -->
-                <a href="student_by_building.php?building=aljazari" class="student-card">
-                    <span class="card-text">AL-JAZARI</span>
-                    <img src="../building-logo.png" alt="Al-Jazari">
-                </a>
-
-                <!-- VIEW ALL -->
-                <a href="student.php" class="student-card">
-                    <span class="card-text">
-                        VIEW ALL<br>STUDENTS
-                    </span>
-                    <img src="../students.png" alt="All Students">
-                </a>
-
-                <!-- ARCHIVED -->
-                <a href="archived_students.php" class="student-card">
-                    <span class="card-text">
-                        ARCHIVED<br>STUDENTS
-                    </span>
-                    <img src="../archive.png" alt="Archived Students">
-                </a>
-
-            </div>
-
-        </div>
-        <!-- Decorative Images -->
-        <img src="../background-left.png" class="decor-left" alt="">
-        <img src="../background-right.png" class="decor-right" alt="">
-
+    <!-- BANNER -->
+    <div class="student-directory-banner">
+        <img src="../student-banner.png" alt="Student Directory">
     </div>
 
-</main>
+    <!-- STUDENT SECTION -->
+    <div class="student-section">
+        <div class="student-card-grid">
 
 <?php
-include("../page/footer.php");
+/* ===============================
+   DYNAMIC BUILDING CARDS
+================================ */
+$sql = "
+SELECT building_id, building_name
+FROM building
+WHERE status = 'Active'
+ORDER BY building_name ASC
+";
+
+$result = $conn->query($sql);
+
+if ($result && $result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+
+        $id   = (int)$row['building_id'];
+        $name = strtoupper(htmlspecialchars($row['building_name']));
+
+        echo "
+        <a href='student_by_building.php?building_id=$id' class='student-card'>
+            <span class='card-text'>$name</span>
+            <img src='../building-logo.png' alt='$name'>
+        </a>
+        ";
+    }
+}
 ?>
+
+            <!-- VIEW ALL (UNCHANGED) -->
+            <a href="student.php" class="student-card">
+                <span class="card-text">
+                    VIEW ALL<br>STUDENTS
+                </span>
+                <img src="../students.png" alt="All Students">
+            </a>
+
+            <!-- ARCHIVED (UNCHANGED) -->
+            <a href="archived_students.php" class="student-card">
+                <span class="card-text">
+                    ARCHIVED<br>STUDENTS
+                </span>
+                <img src="../archive.png" alt="Archived Students">
+            </a>
+
+        </div>
+    </div>
+
+    <!-- DECOR -->
+    <img src="../background-left.png" class="decor-left" alt="">
+    <img src="../background-right.png" class="decor-right" alt="">
+
+</div>
+</main>
+
+<?php include("../page/footer.php"); ?>
