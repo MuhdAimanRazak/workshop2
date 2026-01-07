@@ -9,6 +9,8 @@ if (!isset($_SESSION['staff_ic'])) {
     <html lang="en">
 
     <head>
+   
+
         <meta charset="utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
@@ -57,10 +59,10 @@ if (!isset($_SESSION['staff_ic'])) {
                                     <div class="sb-nav-link-icon"><i class="fa-solid fa-house"></i></div>Dashboard
                                 </a>
                                 <div class="sb-sidenav-menu-heading">Data</div>
-                                <a class="nav-link" href="../students/building_section.php">
+                                <a class="nav-link" href="../building/building_section.php">
                                     <div class="sb-nav-link-icon"><i class="fa-regular fa-credit-card"></i></div>Building
                                 </a>
-                                <a class="nav-link" href="../students/room_section.php">
+                                <a class="nav-link" href="../room/room_section.php">
                                     <div class="sb-nav-link-icon"><i class="fa-regular fa-rectangle-list"></i></div>
                                     Room
                                 </a>
@@ -74,7 +76,7 @@ if (!isset($_SESSION['staff_ic'])) {
                                     <div class="sb-nav-link-icon"><i class="fa-solid fa-clipboard-user"></i></div>Staff
                                 </a>
                                 <div class="sb-sidenav-menu-heading">Report</div>
-                                <a class="nav-link" href="">
+                                <a class="nav-link" href="../report/monthly_occupancy_report.php">
                                     <div class="sb-nav-link-icon"><i class="fa-solid fa-file"></i></div>Montly Report
                                 </a>
                             </div>
@@ -94,6 +96,7 @@ if (!isset($_SESSION['staff_ic'])) {
                     <?php
 //}
 ?>
+
 </body>
 
 </html>

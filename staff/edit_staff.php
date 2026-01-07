@@ -71,6 +71,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <main>
 <style>
+
+    /* ===============================
+   FORCE FULL WHITE BACKGROUND
+================================ */
+html, body {
+    background: #ffffff !important;
+    margin: 0;
+    padding: 0;
+}
 /* ===== SAME UI AS STUDENT ===== */
 .edit-page {
     max-width: 1100px;

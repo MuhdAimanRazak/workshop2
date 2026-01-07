@@ -2,34 +2,77 @@
 include("../page/header.php");
 include("../config/config.php");
 
-if (!isset($conn) || !$conn) {
-    die('<div class="container mt-4">
-            <div class="alert alert-danger">
-                Database connection not available.
-            </div>
-         </div>');
+if (!$conn) {
+    die("<div class='alert alert-danger'>Database connection failed</div>");
 }
+
+
+/* =========================
+   PAGINATION
+========================= */
+$limit = 5;
+$page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $limit;
+
+/* =========================
+   FILTER (SERVER SIDE)
+========================= */
+$statusFilter = $_GET['status'] ?? '';
+$roleFilter   = $_GET['role'] ?? '';
+
+$where = [];
+
+if ($statusFilter !== '') {
+    $where[] = "status = '".$conn->real_escape_string($statusFilter)."'";
+}
+
+if ($roleFilter !== '') {
+    $where[] = "role = '".$conn->real_escape_string($roleFilter)."'";
+}
+
+$whereSQL = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+/* =========================
+   COUNT FOR PAGINATION
+========================= */
+$countRes = $conn->query("SELECT COUNT(*) AS total FROM staff $whereSQL");
+$totalStaff = $countRes->fetch_assoc()['total'];
+$totalPages = ceil($totalStaff / $limit);
+
+/* =========================
+   FETCH DATA
+========================= */
+$sql = "SELECT staff_id, full_name, phone_no, role, status
+        FROM staff
+        $whereSQL
+        ORDER BY full_name ASC
+        LIMIT $limit OFFSET $offset";
+$result = $conn->query($sql);
+
+$start = $totalStaff > 0 ? $offset + 1 : 0;
+$end   = min($offset + $limit, $totalStaff);
 ?>
 
 <main>
+
 <style>
-/* ===============================
-   FOLLOW STUDENT UI EXACTLY
+
+    /* ===============================
+   FORCE FULL WHITE BACKGROUND
 ================================ */
+html, body {
+    background: #ffffff !important;
+    margin: 0;
+    padding: 0;
+}
 .table th, .table td {
     vertical-align: middle;
-    background-color: #ffffff !important;
+    background-color: #fff !important;
 }
 
-.table thead {
-    background-color: #ffffff !important;
-}
-
-/* BANNER (reuse student class) */
 .student-banner {
     margin-top: -6rem;
     margin-bottom: -7rem;
-    text-align: center;
     display: flex;
     justify-content: center;
 }
@@ -37,12 +80,10 @@ if (!isset($conn) || !$conn) {
 .student-banner img {
     max-width: 650px;
     width: 100%;
-    height: auto;
 }
 
-/* SEARCH */
 .student-search-wrapper {
-    width: 70%;
+    width: 420px;
     position: relative;
 }
 
@@ -57,38 +98,50 @@ if (!isset($conn) || !$conn) {
     right: 6px;
     top: 50%;
     transform: translateY(-50%);
-    border-radius: 50%;
     width: 40px;
     height: 40px;
+    border-radius: 50%;
     border: none;
-    background-color: #5f6dff;
+    background: #5f6dff;
     color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
-/* FILTER */
 .student-filters {
     display: flex;
     justify-content: center;
     gap: 1.5rem;
-    margin-top: .75rem;
-    margin-bottom: 1.25rem;
+    margin: .75rem 0 1.25rem;
 }
 
-.card.table-card {
-    margin-top: .75rem;
+.status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
 }
+.status-active { background:#2ecc71; }
+.status-leave { background:#f1c40f; }
+.status-archived { background:#bdc3c7; }
 
 #noResults {
     display: none;
-    padding: 1rem;
-    font-weight: 700;
     text-align: center;
-    margin-top: 0.5rem;
-    color: #333;
+    font-weight: bold;
+    margin-top: 1rem;
 }
+
+/* Letak radio bawah search */
+.student-filters {
+    margin-top: 12px;       /* jarak dari search bar */
+    justify-content: center;
+}
+
+/* Optional – bagi nampak kemas */
+.student-filters label {
+    cursor: pointer;
+}
+
 </style>
 
 <div class="container-fluid px-4">
@@ -98,96 +151,143 @@ if (!isset($conn) || !$conn) {
         <img src="../staff-banner.png" alt="Staff Directory">
     </div>
 
-    <!-- SEARCH + ADD -->
-    <div class="d-flex justify-content-center mb-1">
+    <!-- SEARCH + FILTERS + ADD -->
+    <div class="d-flex justify-content-center align-items-center gap-2 mb-2">
+
+        <!-- SEARCH (CLIENT SIDE – KEKAL) -->
         <div class="student-search-wrapper">
             <input id="staffSearch" type="text"
                    class="form-control student-search-input"
-                   placeholder="Search here">
-            <button type="button" class="student-search-btn" onclick="applySearch()">
+                   placeholder="Search by name"
+                   onkeyup="applySearch()">
+            <button class="student-search-btn">
                 <i class="fas fa-search"></i>
             </button>
         </div>
 
-        <a href="add_staff.php" class="btn btn-success rounded-pill px-4 py-2 ms-3">
+        <!-- ROLE FILTER (SERVER SIDE) -->
+        <select class="form-select rounded-pill px-3"
+                style="width:160px"
+                onchange="location='?role='+this.value+'&status=<?php echo $statusFilter; ?>'">
+            <option value="">All Roles</option>
+            <option value="admin"    <?= $roleFilter=='admin'?'selected':'' ?>>Admin</option>
+            <option value="warden"   <?= $roleFilter=='warden'?'selected':'' ?>>Warden</option>
+            <option value="security" <?= $roleFilter=='security'?'selected':'' ?>>Security</option>
+            <option value="cleaner"  <?= $roleFilter=='cleaner'?'selected':'' ?>>Cleaner</option>
+        </select>
+
+        <!-- STATUS FILTER (SERVER SIDE) -->
+        <select class="form-select rounded-pill px-3"
+                style="width:160px"
+                onchange="location='?status='+this.value+'&role=<?php echo $roleFilter; ?>'">
+            <option value="">All Status</option>
+            <option value="active"    <?= $statusFilter=='active'?'selected':'' ?>>Active</option>
+            <option value="on_leave"  <?= $statusFilter=='on_leave'?'selected':'' ?>>On Leave</option>
+            <option value="archived"  <?= $statusFilter=='archived'?'selected':'' ?>>Archived</option>
+        </select>
+
+        <!-- ADD -->
+        <a href="add_staff.php" class="btn btn-success rounded-pill px-4 py-2">
             <i class="fas fa-plus me-1"></i> Add Staff
         </a>
     </div>
 
-    <!-- FILTER -->
+    <!-- SEARCH TYPE (KEKAL) -->
     <div class="student-filters">
-        <label class="form-check-label">
-            <input class="form-check-input" type="radio" name="searchType" value="name" checked>
-            Name
-        </label>
-        <label class="form-check-label">
-            <input class="form-check-input" type="radio" name="searchType" value="id">
-            Staff ID
-        </label>
-        <label class="form-check-label">
-            <input class="form-check-input" type="radio" name="searchType" value="phone">
-            Phone Number
-        </label>
+        <label><input type="radio" name="searchType" value="name" checked> Name</label>
+        <label><input type="radio" name="searchType" value="id"> Staff ID</label>
+        <label><input type="radio" name="searchType" value="phone"> Phone Number</label>
     </div>
 
     <!-- TABLE -->
-    <div class="card shadow-sm mt-2 table-card">
+    <div class="card shadow-sm">
         <div class="card-body">
 
-<?php
-$sql = "SELECT staff_id, full_name, phone_no
-        FROM staff
-        ORDER BY full_name ASC";
+            <div class="text-muted mb-2">
+                Showing <?php echo $start; ?> to <?php echo $end; ?> of
+                <b><?php echo $totalStaff; ?></b> staff
+            </div>
 
-$result = $conn->query($sql);
+            <table id="staffTable" class="table table-bordered text-center align-middle">
+                <thead>
+                <tr>
+                    <th>Bil.</th>
+                    <th class="text-start">Name</th>
+                    <th>Staff ID</th>
+                    <th>Role</th>
+                    <th>Phone Number</th>
+                    <th>Status</th>
+                    <th>Edit</th>
+                </tr>
+                </thead>
+                <tbody>
 
-if ($result === false) {
-    echo '<div class="alert alert-danger">Database query error.</div>';
-}
-elseif ($result->num_rows === 0) {
-    echo '<div class="alert alert-info">No staff found.</div>';
-}
-else {
-    echo '<div class="table-responsive" style="max-height:520px; overflow:auto;">';
-    echo '<table id="staffTable" class="table table-bordered text-center align-middle">';
-    echo '<thead>
-            <tr>
-                <th>Bil.</th>
-                <th class="text-start">Name</th>
-                <th>Staff ID</th>
-                <th>Phone Number</th>
-                <th>Manage</th>
-            </tr>
-          </thead>
-          <tbody>';
+                <?php
+                if ($totalStaff == 0) {
+                    echo "<tr><td colspan='7'>No results found</td></tr>";
+                } else {
+                    $i = $start;
+                    while ($row = $result->fetch_assoc()) {
 
-    $i = 1;
-    while ($row = $result->fetch_assoc()) {
-        $id    = htmlspecialchars($row['staff_id']);
-        $name  = htmlspecialchars($row['full_name']);
-        $phone = htmlspecialchars($row['phone_no']);
+                        if ($row['status'] == 'active') {
+                            $status = "<span class='status-dot status-active'></span>Active";
+                        } elseif ($row['status'] == 'on_leave') {
+                            $status = "<span class='status-dot status-leave'></span>On Leave";
+                        } else {
+                            $status = "<span class='status-dot status-archived'></span>Archived";
+                        }
 
-        echo "<tr>
-                <td>$i</td>
-                <td class='text-start'>$name</td>
-                <td>$id</td>
-                <td>$phone</td>
-                <td>
-                    <a href='staff_details.php?id=$id'
-                       class='btn btn-outline-primary btn-sm rounded-pill px-3'>
-                        Manage
-                    </a>
-                </td>
-              </tr>";
-        $i++;
-    }
+                        echo "<tr>
+                            <td>$i</td>
+                            <td class='text-start'>{$row['full_name']}</td>
+                            <td>{$row['staff_id']}</td>
+                            <td>".ucfirst($row['role'])."</td>
+                            <td>{$row['phone_no']}</td>
+                            <td>$status</td>
+                            <td>
+                                <a href='staff_details.php?id={$row['staff_id']}'
+                                   class='btn btn-primary btn-sm rounded-pill px-4'>
+                                   Edit
+                                </a>
+                            </td>
+                        </tr>";
+                        $i++;
+                    }
+                }
+                ?>
 
-    echo '</tbody></table></div>';
-    echo '<div id="noResults">No results found</div>';
+                </tbody>
+            </table>
 
-    $result->free();
-}
-?>
+            <!-- PAGINATION -->
+            <?php if ($totalPages > 1): ?>
+            <nav class="d-flex justify-content-end mt-3">
+                <ul class="pagination pagination-sm">
+                    <li class="page-item <?= $page<=1?'disabled':'' ?>">
+                        <a class="page-link"
+                           href="?page=<?= max(1,$page-1) ?>&status=<?= $statusFilter ?>&role=<?= $roleFilter ?>">
+                           Prev
+                        </a>
+                    </li>
+
+                    <?php for ($p=1; $p<=$totalPages; $p++): ?>
+                        <li class="page-item <?= $p==$page?'active':'' ?>">
+                            <a class="page-link"
+                               href="?page=<?= $p ?>&status=<?= $statusFilter ?>&role=<?= $roleFilter ?>">
+                               <?= $p ?>
+                            </a>
+                        </li>
+                    <?php endfor; ?>
+
+                    <li class="page-item <?= $page>=$totalPages?'disabled':'' ?>">
+                        <a class="page-link"
+                           href="?page=<?= min($totalPages,$page+1) ?>&status=<?= $statusFilter ?>&role=<?= $roleFilter ?>">
+                           Next
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <?php endif; ?>
 
         </div>
     </div>
@@ -195,37 +295,19 @@ else {
 
 <script>
 function applySearch() {
-    const q = document.getElementById('staffSearch').value.trim().toLowerCase();
+    const q = document.getElementById('staffSearch').value.toLowerCase();
     const type = document.querySelector('input[name="searchType"]:checked').value;
-    const table = document.getElementById('staffTable');
-    const noResults = document.getElementById('noResults');
+    const rows = document.querySelectorAll('#staffTable tbody tr');
 
-    if (!table) return;
+    rows.forEach(row => {
+        let text = '';
+        if (type === 'name') text = row.cells[1].innerText.toLowerCase();
+        else if (type === 'id') text = row.cells[2].innerText.toLowerCase();
+        else text = row.cells[4].innerText.toLowerCase();
 
-    const rows = table.tBodies[0].rows;
-    let found = false;
-
-    for (let r of rows) {
-        let text;
-        if (type === 'name') text = r.cells[1].textContent.toLowerCase();
-        else if (type === 'id') text = r.cells[2].textContent.toLowerCase();
-        else text = r.cells[3].textContent.toLowerCase();
-
-        if (text.includes(q)) {
-            r.style.display = '';
-            found = true;
-        } else {
-            r.style.display = 'none';
-        }
-    }
-
-    noResults.style.display = found ? 'none' : 'block';
-}
-
-document.getElementById('staffSearch')
-    .addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') applySearch();
+        row.style.display = text.includes(q) ? '' : 'none';
     });
+}
 </script>
 
 </main>

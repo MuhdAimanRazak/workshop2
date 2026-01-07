@@ -72,7 +72,7 @@ if ($building_id <= 0) {
    BLUE ACTION TILE
 ================================ */
 .add-student-card {
-    background: #7f8cff;
+    background: #5f6dff;
     border-radius: 10px;
     padding: 4rem 3.8rem;
     min-height: 260px;

@@ -3,6 +3,14 @@ include("../page/header.php");
 ?>
 
 <style>
+    /* ===============================
+   FORCE FULL WHITE BACKGROUND
+================================ */
+html, body {
+    background: #ffffff !important;
+    margin: 0;
+    padding: 0;
+}
 /* ===============================
    PAGE LAYOUT
 ================================ */
