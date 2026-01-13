@@ -16,20 +16,21 @@ if (!isset($conn) || !$conn) {
         }
         .table thead { background-color: #ffffff !important; }
 
-        .facility-banner {
-            margin-top: -10rem;
-            margin-bottom: -26rem;
-            text-align: center;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-        }
-        .facility-banner img {
-            max-width: 1600px;
-            width: 130%;
-            margin-left: -250px;
-            height: auto;
-        }
+/* ===== Facility Banner (match student.php size) ===== */
+.facility-banner {
+    margin-top: -6rem;
+    margin-bottom: -7rem;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+}
+
+.facility-banner img {
+    max-width: 650px;
+    width: 100%;
+    height: auto;
+}
+
 
         .facility-back { margin-top: .5rem; margin-bottom: .5rem; }
         .facility-back a { text-decoration: none; color: #000; font-size: 0.95rem; }
@@ -71,7 +72,7 @@ if (!isset($conn) || !$conn) {
 
         <!-- Banner -->
         <div class="facility-banner">
-            <img src="../facilitysearch.png" alt="Facility Directory">
+            <img src="../facilities.png" alt="Facility Directory">
         </div>
 
 

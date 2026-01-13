@@ -1,202 +1,237 @@
 <?php
 include("../config/config.php");
+include("../page/header.php");
 
 /* =========================
-   TOTAL STUDENT
+   STAT CARDS
 ========================= */
-$totalStudent = $conn->query(
-    "SELECT COUNT(*) AS total FROM student"
-)->fetch_assoc()['total'];
+$total_buildings = $conn->query("SELECT COUNT(*) total FROM building")->fetch_assoc()['total'];
+
+$total_rooms = $conn->query("
+    SELECT COUNT(DISTINCT no_house, room_no) total
+    FROM room
+")->fetch_assoc()['total'];
+
+$total_students = $conn->query("SELECT COUNT(*) total FROM student")->fetch_assoc()['total'];
+
+$total_facilities = $conn->query("SELECT COUNT(*) total FROM facility")->fetch_assoc()['total'];
+
+$maintenance = $conn->query("
+    SELECT COUNT(*) total FROM facility WHERE status != 'Available'
+")->fetch_assoc()['total'];
+
+$maintenanceLabel = ($maintenance == 0) ? 'All Good' : 'Facilities';
+
 
 /* =========================
-   BED CAPACITY
+   ROOM OCCUPANCY
 ========================= */
-$totalCapacity = $conn->query(
-    "SELECT COUNT(*) AS total FROM bed"
-)->fetch_assoc()['total'];
+$total_beds = $conn->query("SELECT COUNT(*) total FROM room")->fetch_assoc()['total'];
 
-$availableBed = $conn->query(
-    "SELECT COUNT(*) AS available FROM bed WHERE student_id IS NULL"
-)->fetch_assoc()['available'];
+$occupied_beds = $conn->query("
+    SELECT COUNT(DISTINCT room_id) total FROM booking
+")->fetch_assoc()['total'];
+
+$occupancy = ($total_beds > 0)
+    ? round(($occupied_beds / $total_beds) * 100, 1)
+    : 0;
+
+// Minimum visual width
+$displayWidth = max($occupancy, 3);
+
+// Color logic
+$barColor = 'bg-success';
+if ($occupancy > 70) $barColor = 'bg-danger';
+elseif ($occupancy > 30) $barColor = 'bg-warning';
+
 
 /* =========================
-   PAYMENT
+   REPORT SUMMARY
 ========================= */
-$payment = $conn->query("
-    SELECT 
-        SUM(status_payment='Paid') AS paid,
-        SUM(status_payment='Pending') AS pending
-    FROM payment
-")->fetch_assoc();
+$reportStats = ['New'=>0,'Pending'=>0,'Resolved'=>0];
 
-/* =========================
-   BUILDING OCCUPANCY
-========================= */
-$buildingData = [];
-$q = $conn->query("
-    SELECT 
-        r.block_name,
-        COUNT(b.bed_id) AS capacity,
-        SUM(CASE WHEN b.student_id IS NOT NULL THEN 1 ELSE 0 END) AS occupied
-    FROM room r
-    JOIN bed b ON r.room_id = b.room_id
-    GROUP BY r.block_name
+$qReports = $conn->query("
+    SELECT report_status, COUNT(*) total
+    FROM report
+    GROUP BY report_status
 ");
 
-while ($row = $q->fetch_assoc()) {
-    $buildingData[] = $row;
+while ($r = $qReports->fetch_assoc()) {
+    if (isset($reportStats[$r['report_status']])) {
+        $reportStats[$r['report_status']] = $r['total'];
+    }
 }
+
+
+/* =========================
+   RECENT REPORTS
+========================= */
+$qRecent = $conn->query("
+    SELECT report_id, report_title, report_status, created_at
+    FROM report
+    ORDER BY created_at DESC
+    LIMIT 5
+");
 ?>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Hostel Dashboard</title>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #f4f6f8;
-}
-.container {
-    padding: 2rem;
-}
-.cards {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
-}
-.card {
-    background: white;
-    padding: 1.2rem;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,.08);
-}
-.card h2 {
-    margin: 0;
-    font-size: 1.8rem;
-}
-.card p {
-    margin-top: .3rem;
-    color: #666;
-}
-.section {
-    margin-top: 2rem;
-}
-.progress {
-    background: #eee;
-    border-radius: 8px;
-    overflow: hidden;
-    margin-bottom: 1rem;
-}
-.progress-bar {
-    background: #4CAF50;
-    color: white;
-    padding: .4rem;
-    font-size: .85rem;
-    text-align: center;
-}
-.grid-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-}
+.card h2 { line-height:1.2; }
+.card small { opacity:.85; }
+.list-group-item { cursor:pointer; }
+.list-group-item a:hover { text-decoration:underline; }
 </style>
-</head>
 
-<body>
-<div class="container">
+<div class="container-fluid mt-4">
 
-<div class="cards">
-
-    <div class="card">
-        <h2><?= $totalStudent ?></h2>
-        <p>Total Students</p>
+<!-- ================= STAT CARDS ================= -->
+<div class="row g-3">
+    <div class="col-md-2">
+        <div class="card bg-primary text-white shadow-sm">
+            <div class="card-body">
+                <h6>Total Buildings</h6>
+                <h2><?= $total_buildings ?></h2>
+                <small>Registered</small>
+            </div>
+        </div>
     </div>
 
-    <div class="card">
-        <h2><?= $availableBed ?> / <?= $totalCapacity ?></h2>
-        <p>Room Available</p>
+    <div class="col-md-2">
+        <div class="card bg-info text-white shadow-sm">
+            <div class="card-body">
+                <h6>Total Rooms</h6>
+                <h2><?= $total_rooms ?></h2>
+                <small>Active Rooms</small>
+            </div>
+        </div>
     </div>
 
-    <div class="card">
-        <h2><?= $payment['paid'] ?> / <?= $totalStudent ?></h2>
-        <p>Payment Made</p>
+    <div class="col-md-2">
+        <div class="card bg-success text-white shadow-sm">
+            <div class="card-body">
+                <h6>Total Students</h6>
+                <h2><?= $total_students ?></h2>
+                <small>Registered</small>
+            </div>
+        </div>
     </div>
 
-    <div class="card">
-        <h2><?= round(($payment['paid']/$totalStudent)*100) ?>%</h2>
-        <p>Payment Completion</p>
+    <div class="col-md-2">
+        <div class="card bg-secondary text-white shadow-sm">
+            <div class="card-body">
+                <h6>Total Facilities</h6>
+                <h2><?= $total_facilities ?></h2>
+                <small>Available</small>
+            </div>
+        </div>
     </div>
+
+    <div class="col-md-2">
+        <div class="card bg-warning text-dark shadow-sm">
+            <div class="card-body">
+                <h6>Maintenance</h6>
+                <h2><?= $maintenance ?></h2>
+                <small><?= $maintenanceLabel ?></small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= OCCUPANCY + ACTIONS ================= -->
+<div class="row mt-4">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5>Room Occupancy</h5>
+                <p>Occupied: <?= $occupancy ?>%</p>
+                <div class="progress mb-2">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated <?= $barColor ?>"
+                         style="width: <?= $displayWidth ?>%"
+                         role="progressbar"
+                         aria-valuenow="<?= $occupancy ?>"
+                         aria-valuemin="0"
+                         aria-valuemax="100">
+                    </div>
+                </div>
+                <small class="text-muted">
+                    <?= $occupied_beds ?> / <?= $total_beds ?> beds occupied
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5>Quick Actions</h5>
+                <a href="add_building.php" class="btn btn-primary w-100 mb-2">Add Building</a>
+                <a href="add_room.php" class="btn btn-info w-100 mb-2">Add Room</a>
+                <a href="add_facility.php" class="btn btn-success w-100 mb-2">Add Facility</a>
+                <a href="report.php" class="btn btn-outline-secondary w-100">View Reports</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= REPORT SUMMARY + RECENT ================= -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5>Report Summary</h5>
+                <ul class="list-group">
+                    <li class="list-group-item d-flex justify-content-between">
+                        <a href="report.php?status=New">🟦 New</a>
+                        <span class="badge bg-primary"><?= $reportStats['New'] ?></span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <a href="report.php?status=Pending">🟨 Pending</a>
+                        <span class="badge bg-warning"><?= $reportStats['Pending'] ?></span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <a href="report.php?status=Resolved">🟩 Resolved</a>
+                        <span class="badge bg-success"><?= $reportStats['Resolved'] ?></span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5>Recent Reports</h5>
+
+                <?php if ($qRecent->num_rows > 0) { ?>
+                <ul class="list-group">
+                    <?php while ($r = $qRecent->fetch_assoc()) {
+                        $dot = match($r['report_status']) {
+                            'New' => 'bg-primary',
+                            'Pending' => 'bg-warning',
+                            'Resolved' => 'bg-success',
+                            default => 'bg-secondary'
+                        };
+                        $style = ($r['report_status']=='New') ? 'fw-bold' : 'text-muted';
+                    ?>
+                    <li class="list-group-item <?= $style ?>">
+                        <span class="badge rounded-pill <?= $dot ?> me-2">&nbsp;</span>
+                        <a href="report_view.php?id=<?= $r['report_id'] ?>"
+                           class="text-decoration-none">
+                           <?= htmlspecialchars($r['report_title']) ?>
+                        </a>
+                        <small class="float-end">
+                            <?= date("d M Y H:i", strtotime($r['created_at'])) ?>
+                        </small>
+                    </li>
+                    <?php } ?>
+                </ul>
+                <?php } else { ?>
+                    <p class="text-muted text-center py-3">No recent reports</p>
+                <?php } ?>
+            </div>
+        </div>
+    </div>
+</div>
 
 </div>
 
-<div class="section">
-<h3>Building Occupancy</h3>
-
-<?php foreach ($buildingData as $b):
-$percent = ($b['occupied'] / $b['capacity']) * 100;
-?>
-
-<strong><?= $b['block_name'] ?></strong>
-(<?= $b['occupied'] ?>/<?= $b['capacity'] ?>)
-
-<div class="progress">
-    <div class="progress-bar" style="width:<?= $percent ?>%">
-        <?= round($percent) ?>%
-    </div>
-</div>
-
-<?php endforeach; ?>
-</div>
-
-<div class="section grid-2">
-
-    <div class="card">
-        <canvas id="buildingChart"></canvas>
-    </div>
-
-    <div class="card">
-        <canvas id="paymentChart"></canvas>
-    </div>
-
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-
-    const buildingLabels = <?= json_encode(array_column($buildingData,'block_name')) ?>;
-    const occupiedData  = <?= json_encode(array_column($buildingData,'occupied')) ?>;
-    const capacityData  = <?= json_encode(array_column($buildingData,'capacity')) ?>;
-
-    new Chart(document.getElementById('buildingChart'), {
-        type: 'bar',
-        data: {
-            labels: buildingLabels,
-            datasets: [
-                { label: 'Occupied', data: occupiedData },
-                { label: 'Capacity', data: capacityData }
-            ]
-        }
-    });
-
-    new Chart(document.getElementById('paymentChart'), {
-        type: 'pie',
-        data: {
-            labels: ['Paid', 'Pending'],
-            datasets: [{
-                data: [<?= $payment['paid'] ?>, <?= $payment['pending'] ?>]
-            }]
-        }
-    });
-
-});
-</script>
-
-</div>
-</body>
-</html>
+<?php include("../page/footer.php"); ?>

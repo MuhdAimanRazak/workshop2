@@ -26,8 +26,9 @@ html, body {
 }
 
 /* TOP BAR */
+/* TOP BAR */
 .top-bar {
-    background: #243f8f;
+    background: #243f8f;   /* ⬅️ INI WARNA UNGU/BIRU */
     height: 55px;
     display: flex;
     align-items: center;
@@ -36,6 +37,7 @@ html, body {
     font-weight: bold;
     font-size: 18px;
 }
+
 
 /* PAGE */
 .page {

@@ -151,7 +151,7 @@ html, body {
     <option value="New" <?= s('report_status')=='New'?'selected':'' ?>>New</option>
     <option value="In Progress" <?= s('report_status')=='In Progress'?'selected':'' ?>>In Progress</option>
     <option value="Resolved" <?= s('report_status')=='Resolved'?'selected':'' ?>>Resolved</option>
-    <option value="Rejected" <?= s('report_status')=='Rejected'?'selected':'' ?>>Rejected</option>
+
 </select>
 </div>
 

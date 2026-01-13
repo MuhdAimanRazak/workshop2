@@ -77,7 +77,7 @@ if (!isset($_SESSION['staff_ic'])) {
                         <div class="sb-sidenav-menu">
                             <div class="nav">
                                 <div class="sb-sidenav-menu-heading">Home</div>
-                                <a class="nav-link" href="">
+                                <a class="nav-link" href="../dashboard/dashboard.php">
                                     <div class="sb-nav-link-icon"><i class="fa-solid fa-house"></i></div>Dashboard
                                 </a>
                                 <div class="sb-sidenav-menu-heading">Data</div>
@@ -101,7 +101,7 @@ if (!isset($_SESSION['staff_ic'])) {
                                 <a class="nav-link" href="../report/monthly_occupancy_report.php">
                                     <div class="sb-nav-link-icon"><i class="fa-solid fa-file"></i></div>Montly Report
                                 </a>
-                                <a class="nav-link" href="../room/report.php">
+                                <a class="nav-link" href="../room/report_by_building.php">
                                     <div class="sb-nav-link-icon"><i class="fa-solid fa-file"></i></div>Report
                                 </a>
                                 <a class="nav-link" href="../room/room_checklist.php">
