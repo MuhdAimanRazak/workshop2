@@ -127,7 +127,7 @@ SELECT
     full_name,
     phone_no
 FROM student
-WHERE student_status = 'inactive'
+WHERE status = 'inactive'
 ORDER BY full_name ASC
 ";
 

@@ -1,0 +1,252 @@
+/* RESET */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+/* PAGE BACKGROUND */
+html, body {
+    background: #e6e8ee;
+    margin: 0;
+    padding: 0;
+}
+
+/* OUTER DEVICE FRAME */
+.device {
+    width: 100%;
+    max-width: 1800px;
+    min-height: 650px;
+    margin: 0;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 20px 40px rgba(0,0,0,.25);
+    overflow: hidden;
+}
+
+/* TOP BAR */
+.top-bar {
+    background: #243f8f;
+    height: 55px;
+    display: flex;
+    align-items: center;
+    padding: 0 25px;
+    color: #fff;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+/* PAGE */
+.page {
+    background: #fff;
+    position: relative;
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    padding-bottom: 140px;
+}
+
+/* BANNER */
+.banner {
+    text-align: center;
+    margin-top: 25px;
+    margin-bottom: 30px;
+}
+
+.banner img {
+    width: 720px;
+    max-width: 95%;
+    height: auto;
+}
+
+/* CARD */
+.card {
+    width: 760px;
+    min-height: 420px;
+    display: flex;
+    background: #fff;
+    box-shadow: 0 20px 40px rgba(0,0,0,.18);
+    border-radius: 14px;
+    overflow: hidden;
+    z-index: 2;
+    position: relative;
+}
+
+/* LEFT IMAGE */
+.card-left {
+    width: 360px;
+}
+
+.card-left img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* RIGHT CONTENT */
+.card-right {
+    width: 400px;
+    padding: 40px 35px;
+    text-align: center;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* LOGO */
+.login-logo {
+    width: 70px;
+    margin: 0 auto 12px;
+    display: block;
+}
+
+/* FORM */
+.field {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.field input {
+    width: 100%;
+    padding: 10px 35px 10px 10px;
+    border: 1px solid #ccc;
+    outline: none;
+    border-radius: 4px;
+}
+
+.field span {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 13px;
+    color: #888;
+}
+
+.field input:focus + span,
+.field input:valid + span {
+    display: none;
+}
+
+.field i {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    cursor: pointer;
+    transform: translateY(-50%);
+}
+
+/* OPTIONS */
+.row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 20px;
+}
+
+.row a {
+    color: #5b6df5;
+    text-decoration: none;
+}
+
+/* BUTTON */
+button {
+    width: 100%;
+    padding: 10px;
+    background: #8a97f5;
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+button:hover {
+    background: #6e7de8;
+}
+
+/* REMINDER BOX */
+.reminder-box {
+    max-width: 340px;
+    margin: 18px auto 0;
+    background: #eaf4ff;
+    border-left: 4px solid #2196f3;
+    padding: 14px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #0c5460;
+    text-align: center;
+    line-height: 1.5;
+}
+
+/* DECORATIVE CORNER IMAGES */
+.decor-left {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 350px;
+    opacity: 0.8;
+    pointer-events: none;
+}
+
+.decor-right {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 350px;
+    opacity: 0.8;
+    pointer-events: none;
+}
+
+/* FOOTER */
+.footer {
+    text-align: center;
+    font-size: 12px;
+    margin: 20px 0;
+    color: #777;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+
+    .card {
+        width: 92%;
+        flex-direction: column;
+        min-height: auto;
+    }
+
+    .card-left {
+        width: 100%;
+        height: 220px;
+    }
+
+    .card-right {
+        width: 100%;
+    }
+
+    .banner img {
+        width: 90%;
+    }
+
+    .decor-left,
+    .decor-right {
+        width: 160px;
+        opacity: 0.15;
+    }
+}
+
+.confirm-box p {
+    margin: 12px 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+.confirm-box p strong {
+    min-width: 80px;
+}
+

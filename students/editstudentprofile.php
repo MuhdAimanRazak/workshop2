@@ -1,7 +1,6 @@
 <?php
 include("../config/config.php");
 
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $student_id     = $_POST['student_id'];
@@ -117,8 +116,6 @@ $ins->bind_param("siis", $student_id, $room_id, $bed_no, $status_payment);
     $occ->execute();
 }
 
-
-
     header("Location: student_details.php?id=".$student_id);
     exit;
 }
@@ -142,7 +139,12 @@ function s($k){ global $student; return htmlspecialchars($student[$k] ?? ''); }
 
 <main>
 <style>
-/* ===== UI AS IS – TAK SENTUH ===== */
+html, body {
+    background: #ffffff !important;
+    margin: 0;
+    padding: 0;
+}
+
 .edit-page {
     max-width: 1100px;
     margin: 3.25rem auto;
@@ -151,32 +153,51 @@ function s($k){ global $student; return htmlspecialchars($student[$k] ?? ''); }
     box-shadow: 0 12px 30px rgba(0,0,0,0.06);
     padding: 2rem;
 }
+
 .edit-row {
     display:grid;
     grid-template-columns:1fr 1fr;
     gap:.75rem;
 }
+
 .form-group label {
     font-weight:600;
     margin-bottom:6px;
     display:block;
+    color: #333;
 }
+
 .form-group input, .form-group select {
     width:100%;
     padding:.5rem .65rem;
     border-radius:8px;
     border:1px solid #e1e6f3;
+    font-size: 0.95rem;
 }
-.full-row{grid-column:1/-1;}
+
+.form-group input:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+    color: #6c757d;
+}
+
+.full-row{
+    grid-column:1/-1;
+}
+
 .btn-row{
     display:flex;
     justify-content:flex-end;
     gap:.6rem;
     margin-top:1rem;
 }
-.btn-row .btn{border-radius:999px;}
 
-/* ===== HOSTEL UI FIX ===== */
+.btn-row .btn{
+    border-radius:999px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 600;
+}
+
 .hostel-section {
     margin-top: 1.5rem;
     padding: 1.5rem;
@@ -192,14 +213,12 @@ function s($k){ global $student; return htmlspecialchars($student[$k] ?? ''); }
     margin-bottom: 1rem;
 }
 
-/* force hostel layout 2-column kiri */
 .hostel-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem 1.25rem;
 }
 
-/* pastikan semua select align kiri */
 .hostel-grid .form-group {
     margin: 0;
 }
@@ -208,18 +227,18 @@ function s($k){ global $student; return htmlspecialchars($student[$k] ?? ''); }
     background-color: #fff;
 }
 
-/* responsive (mobile) */
-@media (max-width: 768px) {
-    .hostel-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
 #house-group {
     display: none;
 }
 
-
+@media (max-width: 768px) {
+    .hostel-grid {
+        grid-template-columns: 1fr;
+    }
+    .edit-row {
+        grid-template-columns: 1fr;
+    }
+}
 </style>
 
 <div class="container">
@@ -227,123 +246,120 @@ function s($k){ global $student; return htmlspecialchars($student[$k] ?? ''); }
 
 <h3>Edit Student Profile</h3>
 
-<form method="post">
+<form method="post" id="editForm">
 
 <div class="edit-row">
 
-
 <div class="form-group full-row">
 <label>Full Name</label>
-<input type="text" name="full_name" value="<?= s('full_name') ?>">
+<input type="text" name="full_name" value="<?= s('full_name') ?>" required>
 </div>
 
 <div class="form-group">
 <label>Matric Number</label>
-<input type="text" name="student_id" value="<?= s('student_id') ?>">
+<input type="text" value="<?= s('student_id') ?>" disabled readonly>
+<input type="hidden" name="student_id" value="<?= s('student_id') ?>">
 </div>
-
-<input type="hidden" name="faculty" id="faculty" value="<?= s('faculty') ?>">
-
-
 
 <div class="form-group">
 <label>Phone Number</label>
-<input type="text" name="phone_no" value="<?= s('phone_no') ?>">
+<input type="text" name="phone_no" value="<?= s('phone_no') ?>" required>
 </div>
 
 <div class="form-group">
 <label>IC Number</label>
-<input type="text" name="student_ic" value="<?= s('student_ic') ?>">
+<input type="text" value="<?= s('student_ic') ?>" disabled readonly>
+<input type="hidden" name="student_ic" value="<?= s('student_ic') ?>">
 </div>
 
 <div class="form-group">
 <label>Guardian's Number</label>
-<input type="text" name="parent_contact" value="<?= s('parent_contact') ?>">
+<input type="text" name="parent_contact" value="<?= s('parent_contact') ?>" required>
 </div>
 
 <div class="form-group">
 <label>Email</label>
-<input type="email" name="email" value="<?= s('email') ?>">
+<input type="email" name="email" value="<?= s('email') ?>" required>
 </div>
 
-<div>
-    <div class="detail-title">Programme</div>
-    <div class="detail-value">
-        <select name="course" style="width:100%; padding:.4rem;">
-            <optgroup label="FTMK – Fakulti Teknologi Maklumat & Komunikasi">
-                <option <?= ($student['course']=="Bachelor of Computer Science (Artificial Intelligence)")?"selected":"" ?>>
-                    Bachelor of Computer Science (Artificial Intelligence)
-                </option>
-                <option <?= ($student['course']=="Bachelor of Computer Science (Data Engineering)")?"selected":"" ?>>
-                    Bachelor of Computer Science (Data Engineering)
-                </option>
-                <option <?= ($student['course']=="Bachelor of Computer Science (Software Development)")?"selected":"" ?>>
-                    Bachelor of Computer Science (Software Development)
-                </option>
-                <option <?= ($student['course']=="Bachelor of Computer Science (Cybersecurity)")?"selected":"" ?>>
-                    Bachelor of Computer Science (Cybersecurity)
-                </option>
-                <option <?= ($student['course']=="Bachelor of Information Technology (Information Security)")?"selected":"" ?>>
-                    Bachelor of Information Technology (Information Security)
-                </option>
-                <option <?= ($student['course']=="Bachelor of Information Technology (Software Engineering)")?"selected":"" ?>>
-                    Bachelor of Information Technology (Software Engineering)
-                </option>
-                <option <?= ($student['course']=="Diploma in Computer Science")?"selected":"" ?>>
-                    Diploma in Computer Science
-                </option>
-                <option <?= ($student['course']=="Diploma in Information Technology")?"selected":"" ?>>
-                    Diploma in Information Technology
-                </option>
-            </optgroup>
+<div class="form-group">
+<label>Programme</label>
+<select name="course" required>
+    <optgroup label="FTMK – Fakulti Teknologi Maklumat & Komunikasi">
+        <option <?= ($student['course']=="Bachelor of Computer Science (Artificial Intelligence)")?"selected":"" ?>>
+            Bachelor of Computer Science (Artificial Intelligence)
+        </option>
+        <option <?= ($student['course']=="Bachelor of Computer Science (Data Engineering)")?"selected":"" ?>>
+            Bachelor of Computer Science (Data Engineering)
+        </option>
+        <option <?= ($student['course']=="Bachelor of Computer Science (Software Development)")?"selected":"" ?>>
+            Bachelor of Computer Science (Software Development)
+        </option>
+        <option <?= ($student['course']=="Bachelor of Computer Science (Cybersecurity)")?"selected":"" ?>>
+            Bachelor of Computer Science (Cybersecurity)
+        </option>
+        <option <?= ($student['course']=="Bachelor of Information Technology (Information Security)")?"selected":"" ?>>
+            Bachelor of Information Technology (Information Security)
+        </option>
+        <option <?= ($student['course']=="Bachelor of Information Technology (Software Engineering)")?"selected":"" ?>>
+            Bachelor of Information Technology (Software Engineering)
+        </option>
+        <option <?= ($student['course']=="Diploma in Computer Science")?"selected":"" ?>>
+            Diploma in Computer Science
+        </option>
+        <option <?= ($student['course']=="Diploma in Information Technology")?"selected":"" ?>>
+            Diploma in Information Technology
+        </option>
+    </optgroup>
 
-            <optgroup label="FKE – Fakulti Kejuruteraan Elektrik">
-                <option <?= ($student['course']=="Bachelor of Electrical Engineering")?"selected":"" ?>>
-                    Bachelor of Electrical Engineering
-                </option>
-                <option <?= ($student['course']=="Bachelor of Electronics Engineering")?"selected":"" ?>>
-                    Bachelor of Electronics Engineering
-                </option>
-                <option <?= ($student['course']=="Bachelor of Mechatronics Engineering")?"selected":"" ?>>
-                    Bachelor of Mechatronics Engineering
-                </option>
-                <option <?= ($student['course']=="Diploma in Electrical Engineering")?"selected":"" ?>>
-                    Diploma in Electrical Engineering
-                </option>
-                <option <?= ($student['course']=="Diploma in Electronics Engineering")?"selected":"" ?>>
-                    Diploma in Electronics Engineering
-                </option>
-            </optgroup>
+    <optgroup label="FKE – Fakulti Kejuruteraan Elektrik">
+        <option <?= ($student['course']=="Bachelor of Electrical Engineering")?"selected":"" ?>>
+            Bachelor of Electrical Engineering
+        </option>
+        <option <?= ($student['course']=="Bachelor of Electronics Engineering")?"selected":"" ?>>
+            Bachelor of Electronics Engineering
+        </option>
+        <option <?= ($student['course']=="Bachelor of Mechatronics Engineering")?"selected":"" ?>>
+            Bachelor of Mechatronics Engineering
+        </option>
+        <option <?= ($student['course']=="Diploma in Electrical Engineering")?"selected":"" ?>>
+            Diploma in Electrical Engineering
+        </option>
+        <option <?= ($student['course']=="Diploma in Electronics Engineering")?"selected":"" ?>>
+            Diploma in Electronics Engineering
+        </option>
+    </optgroup>
 
-            <optgroup label="FKM – Fakulti Kejuruteraan Mekanikal">
-                <option <?= ($student['course']=="Bachelor of Mechanical Engineering")?"selected":"" ?>>
-                    Bachelor of Mechanical Engineering
-                </option>
-                <option <?= ($student['course']=="Bachelor of Manufacturing Engineering")?"selected":"" ?>>
-                    Bachelor of Manufacturing Engineering
-                </option>
-                <option <?= ($student['course']=="Bachelor of Industrial Engineering")?"selected":"" ?>>
-                    Bachelor of Industrial Engineering
-                </option>
-                <option <?= ($student['course']=="Bachelor of Automotive Engineering")?"selected":"" ?>>
-                    Bachelor of Automotive Engineering
-                </option>
-                <option <?= ($student['course']=="Diploma in Mechanical Engineering")?"selected":"" ?>>
-                    Diploma in Mechanical Engineering
-                </option>
-                <option <?= ($student['course']=="Diploma in Industrial Engineering")?"selected":"" ?>>
-                    Diploma in Industrial Engineering
-                </option>
-            </optgroup>
-        </select>
-    </div>
+    <optgroup label="FKM – Fakulti Kejuruteraan Mekanikal">
+        <option <?= ($student['course']=="Bachelor of Mechanical Engineering")?"selected":"" ?>>
+            Bachelor of Mechanical Engineering
+        </option>
+        <option <?= ($student['course']=="Bachelor of Manufacturing Engineering")?"selected":"" ?>>
+            Bachelor of Manufacturing Engineering
+        </option>
+        <option <?= ($student['course']=="Bachelor of Industrial Engineering")?"selected":"" ?>>
+            Bachelor of Industrial Engineering
+        </option>
+        <option <?= ($student['course']=="Bachelor of Automotive Engineering")?"selected":"" ?>>
+            Bachelor of Automotive Engineering
+        </option>
+        <option <?= ($student['course']=="Diploma in Mechanical Engineering")?"selected":"" ?>>
+            Diploma in Mechanical Engineering
+        </option>
+        <option <?= ($student['course']=="Diploma in Industrial Engineering")?"selected":"" ?>>
+            Diploma in Industrial Engineering
+        </option>
+    </optgroup>
+</select>
 </div>
 
+<input type="hidden" name="faculty" id="faculty" value="<?= s('faculty') ?>">
 
 <div class="form-group full-row">
 <label>Address</label>
-<input type="text" name="address" value="<?= s('address') ?>">
+<input type="text" name="address" value="<?= s('address') ?>" required>
 </div>
+
 </div>
 
 <div class="hostel-section">
@@ -351,7 +367,6 @@ function s($k){ global $student; return htmlspecialchars($student[$k] ?? ''); }
 
     <div class="hostel-grid">
 
-        <!-- BUILDING -->
         <div class="form-group">
             <label>Building</label>
             <select id="building" class="form-control">
@@ -367,7 +382,6 @@ function s($k){ global $student; return htmlspecialchars($student[$k] ?? ''); }
             </select>
         </div>
 
-        <!-- BLOCK -->
         <div class="form-group">
             <label>Block</label>
             <select id="block" class="form-control" disabled>
@@ -375,7 +389,6 @@ function s($k){ global $student; return htmlspecialchars($student[$k] ?? ''); }
             </select>
         </div>
 
-        <!-- LEVEL -->
         <div class="form-group">
             <label>Level</label>
             <select id="level" class="form-control" disabled>
@@ -383,7 +396,6 @@ function s($k){ global $student; return htmlspecialchars($student[$k] ?? ''); }
             </select>
         </div>
 
-        <!-- HOUSE (WRAPPED ❗) -->
         <div class="form-group" id="house-group">
             <label>House</label>
             <select id="house" class="form-control" disabled>
@@ -391,7 +403,6 @@ function s($k){ global $student; return htmlspecialchars($student[$k] ?? ''); }
             </select>
         </div>
 
-        <!-- ROOM -->
         <div class="form-group">
             <label>Room</label>
             <select id="room" class="form-control" disabled>
@@ -399,7 +410,6 @@ function s($k){ global $student; return htmlspecialchars($student[$k] ?? ''); }
             </select>
         </div>
 
-        <!-- BED -->
         <div class="form-group">
             <label>Bed</label>
             <select name="bed_key" id="bed" class="form-control" disabled>
@@ -407,7 +417,6 @@ function s($k){ global $student; return htmlspecialchars($student[$k] ?? ''); }
             </select>
         </div>
 
-        <!-- PAYMENT -->
         <div class="form-group">
             <label>Payment Status</label>
             <select name="status_payment" class="form-control">
@@ -416,8 +425,8 @@ function s($k){ global $student; return htmlspecialchars($student[$k] ?? ''); }
                 <option value="Cancelled">Cancelled</option>
             </select>
         </div>
-</div>
 
+    </div>
 </div>
 
 <div class="btn-row">
@@ -426,12 +435,23 @@ function s($k){ global $student; return htmlspecialchars($student[$k] ?? ''); }
    Cancel
 </a>
 
-<button type="submit" class="btn btn-success">Save</button>
+<button type="submit" class="btn btn-success">Save Changes</button>
 </div>
 
 </form>
 </div>
 </div>
+
+<script>
+// Form submission confirmation
+document.getElementById('editForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    if (confirm('Are you sure you want to save these changes to the student profile?')) {
+        this.submit();
+    }
+});
+</script>
 
 <script>
 const programmeToFaculty = {
@@ -490,6 +510,7 @@ if (programmeSelect) {
     });
 }
 </script>
+
 <script>
 const building = document.getElementById('building');
 const block    = document.getElementById('block');
@@ -500,13 +521,11 @@ const bed      = document.getElementById('bed');
 
 const houseGroup = document.getElementById('house-group');
 
-// RESET FUNCTION
 function resetSelect(el, text) {
     el.innerHTML = `<option>${text}</option>`;
     el.disabled = true;
 }
 
-// BUILDING → BLOCK
 building.onchange = () => {
     resetSelect(block, '-- Select Building First --');
     resetSelect(level, '-- Select Block First --');
@@ -524,7 +543,6 @@ building.onchange = () => {
         });
 };
 
-// BLOCK → LEVEL
 block.onchange = () => {
     resetSelect(level, '-- Select Block First --');
     resetSelect(room, '-- Select Level First --');
@@ -541,22 +559,18 @@ block.onchange = () => {
         });
 };
 
-// LEVEL → CHECK ADA HOUSE ATAU TAK
 level.onchange = () => {
     resetSelect(room, '-- Select Level First --');
     resetSelect(bed, '-- Select Room First --');
 
-    // check DB ada house ke
     fetch(`get_houses.php?block_id=${block.value}&level=${level.value}`)
         .then(res => res.text())
         .then(html => {
             if (html.trim() !== '') {
-                // ✅ ADA HOUSE
                 houseGroup.style.display = 'block';
                 house.innerHTML = '<option>-- Select House --</option>' + html;
                 house.disabled = false;
             } else {
-                // ❌ TAK ADA HOUSE → TERUS ROOM
                 houseGroup.style.display = 'none';
 
                 fetch(`get_rooms.php?block_id=${block.value}&level=${level.value}`)
@@ -569,7 +583,6 @@ level.onchange = () => {
         });
 };
 
-// HOUSE → ROOM
 house.onchange = () => {
     resetSelect(room, '-- Select House First --');
     resetSelect(bed, '-- Select Room First --');
@@ -582,7 +595,6 @@ house.onchange = () => {
         });
 };
 
-// ROOM → BED
 room.onchange = () => {
     resetSelect(bed, '-- Select Room First --');
 
@@ -594,8 +606,6 @@ room.onchange = () => {
         });
 };
 </script>
-
-
 
 </main>
 

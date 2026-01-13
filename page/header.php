@@ -1,10 +1,19 @@
 <?php
-/*require '../log/conn.php';
+require '../log/conn.php';
 if (!isset($_SESSION['staff_ic'])) {
     echo "<script>alert('Session variable staff_ic doesn't exist.'); window.location.href = '../log/index.php';</script>";
     exit;
 } else {
-    */?>
+    /* =========================
+       GET CURRENT USER INFO & ROLE
+    ========================= */
+    $staff_ic = $_SESSION['staff_ic'];
+    $sql = "SELECT full_name, role, staff_id FROM staff WHERE staff_ic = $staff_ic";
+    $row = $conn->query($sql)->fetch_object();
+    $current_user_name = $row->full_name ?? '';
+    $current_user_role = $row->role ?? '';
+    $current_user_id = $row->staff_id ?? '';
+    ?>
     <!DOCTYPE html>
     <html lang="en">
 
@@ -39,11 +48,24 @@ if (!isset($_SESSION['staff_ic'])) {
                         <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button"
                             data-bs-toggle="dropdown" aria-expanded="false"><i class="fas fa-user fa-fw"></i></a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item" href="../log/signup.php">Sign Up</a></li>
+                            <li>
+                                <a class="dropdown-item" href="../staff/edit_acc_details.php">
+                                    <i class="fa-solid fa-user-pen me-2"></i> Edit Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="../staff/change_staff_password.php">
+                                    <i class="fa-solid fa-key me-2"></i> Change Password
+                                </a>
+                            </li>
                             <li>
                                 <hr class="dropdown-divider" />
                             </li>
-                            <li><a class="dropdown-item" href="../log/logout.php">Logout</a></li>
+                            <li>
+                                <a class="dropdown-item" href="../log/logout.php">
+                                    <i class="fa-solid fa-right-from-bracket me-2"></i> Logout
+                                </a>
+                            </li>
                         </ul>
 
                     </li>
@@ -55,7 +77,7 @@ if (!isset($_SESSION['staff_ic'])) {
                         <div class="sb-sidenav-menu">
                             <div class="nav">
                                 <div class="sb-sidenav-menu-heading">Home</div>
-                                <a class="nav-link" href="../dash/index.php">
+                                <a class="nav-link" href="">
                                     <div class="sb-nav-link-icon"><i class="fa-solid fa-house"></i></div>Dashboard
                                 </a>
                                 <div class="sb-sidenav-menu-heading">Data</div>
@@ -66,7 +88,7 @@ if (!isset($_SESSION['staff_ic'])) {
                                     <div class="sb-nav-link-icon"><i class="fa-regular fa-rectangle-list"></i></div>
                                     Room
                                 </a>
-                                <a class="nav-link" href="">
+                                <a class="nav-link" href="../facility/facility.php">
                                     <div class="sb-nav-link-icon"><i class="fa-solid fa-person-shelter"></i></div>Facilities
                                 </a>
                                 <a class="nav-link" href="../students/student_section.php">
@@ -79,22 +101,23 @@ if (!isset($_SESSION['staff_ic'])) {
                                 <a class="nav-link" href="../report/monthly_occupancy_report.php">
                                     <div class="sb-nav-link-icon"><i class="fa-solid fa-file"></i></div>Montly Report
                                 </a>
+                                <a class="nav-link" href="../room/report.php">
+                                    <div class="sb-nav-link-icon"><i class="fa-solid fa-file"></i></div>Report
+                                </a>
+                                <a class="nav-link" href="../room/room_checklist.php">
+                                    <div class="sb-nav-link-icon"><i class="fa-solid fa-file"></i></div>Room Checklist
+                                </a>
                             </div>
                         </div>
                         <div class="sb-sidenav-footer">
-                            <?php
-                            //$staff_ic = $_SESSION['staff_ic'];
-                            //$sql = "SELECT * FROM staff WHERE staff_ic = $staff_ic";
-                            //$row = $conn->query($sql)->fetch_object();
-                            ?>
                             <div class="small">Logged in as: </div>
-                            <?php //echo $row->staff_name; ?>
+                            <?php echo $current_user_name; ?>
                         </div>
                     </nav>
                 </div>
                 <div id="layoutSidenav_content">
                     <?php
-//}
+}
 ?>
 
 </body>

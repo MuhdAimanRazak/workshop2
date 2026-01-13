@@ -31,7 +31,7 @@ JOIN booking bkg ON s.student_id=bkg.student_id
 JOIN room r ON bkg.room_id=r.room_id
 JOIN block blk ON r.block_id=blk.block_id
 WHERE blk.building_id=?
-AND s.student_status='active'
+AND s.status='active'
 ";
 
 $stmt = $conn->prepare($sql);

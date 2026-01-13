@@ -169,7 +169,7 @@ JOIN room r        ON bkg.room_id = r.room_id
 JOIN block blk     ON r.block_id = blk.block_id
 JOIN building bld  ON blk.building_id = bld.building_id
 WHERE bld.building_id = ?
-  AND s.student_status = 'active'
+  AND s.status = 'active'
 ORDER BY s.full_name ASC
 ";
 

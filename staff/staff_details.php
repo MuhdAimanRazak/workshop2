@@ -45,7 +45,7 @@ function s($arr, $key, $default = '') {
 /* Mask IC */
 function mask_ic($ic) {
     if (!$ic) return '—';
-    return substr($ic, 0, 10) . '****';
+    return substr($ic, 0, 8) . '****';
 }
 
 $back_url = "/workshop2/staff/staff.php";
@@ -199,9 +199,9 @@ html, body {
                     Edit
                 </a>
 
-                <a href="change_staff_password.php?id=<?= s($staff,'staff_id') ?>"
+                <a href="reset_password.php?id=<?= s($staff,'staff_id') ?>"
                    class="btn btn-outline-primary change-pass-btn">
-                    Change Password
+                    Reset Password
                 </a>
 
                 <form method="post" action="delete_staff.php"

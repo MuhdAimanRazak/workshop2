@@ -47,7 +47,7 @@ html, body {
         .student-back { margin-top: .5rem; margin-bottom: .5rem; }
         .student-back a { text-decoration: none; color: #000; font-size: 0.95rem; }
 
-        .student-search-wrapper { width: 70%; position: relative; }
+        .student-search-wrapper { width: 60%; position: relative; }
         .student-search-input { border-radius: 50px; padding-right: 3.2rem; height: 48px; }
 
         .student-search-btn {
@@ -81,19 +81,26 @@ html, body {
         </div>
 
         <!-- Search bar -->
-        <div class="d-flex justify-content-center mb-1">
-            <div class="student-search-wrapper">
-                <input id="studentSearch" type="text" class="form-control student-search-input" 
-                       placeholder="Search here">
-                <button type="button" class="student-search-btn" onclick="applySearch()">
-                    <i class="fas fa-search"></i>
-                </button>
-            </div>
-                <!-- Add Student Button -->
+<div class="d-flex justify-content-center align-items-center mb-1 gap-2">
+    <div class="student-search-wrapper">
+        <input id="studentSearch" type="text" class="form-control student-search-input" 
+               placeholder="Search here">
+        <button type="button" class="student-search-btn" onclick="applySearch()">
+            <i class="fas fa-search"></i>
+        </button>
+    </div>
+
+    <!-- Add Student Button -->
     <a href="add_student_choice.php" class="btn btn-success rounded-pill px-4 py-2">
         <i class="fas fa-plus me-1"></i> Add Student
     </a>
-        </div>
+
+    <!-- Edit Student Button -->
+    <a href="students_edit_import_form.php" class="btn btn-primary rounded-pill px-4 py-2">
+        <i class="fas fa-edit me-1"></i> Edit Student
+    </a>
+</div>
+
 
         <!-- Radio filter -->
         <div class="student-filters">

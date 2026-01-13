@@ -24,7 +24,7 @@ $sql = "SELECT
             faculty,
             course,
             parent_contact,
-            student_status
+            status
         FROM student
         WHERE student_id = ?
         LIMIT 1";
@@ -69,6 +69,10 @@ $roomResult = $roomStmt->get_result();
 $roomInfo = $roomResult->fetch_assoc();
 $roomStmt->close();
 
+function mask_ic($ic) {
+    if (!$ic) return '—';
+    return substr($ic, 0, 8) . '****';
+}
 function s($arr, $key, $default = '') {
     return isset($arr[$key]) ? $arr[$key] : $default;
 }
@@ -77,6 +81,7 @@ $back_url = "/workshop2/students/student.php";
 ?>
 
 <?php include("../page/header.php"); ?>
+
 
 <main>
 <style>
@@ -248,7 +253,7 @@ $back_url = "/workshop2/students/student.php";
 
     <div class="edit-button-wrap">
         <a href="editstudentprofile.php?id=<?= s($student,'student_id') ?>" class="btn btn-primary">Edit</a>
-        <a href="change_student_password.php?id=<?= s($student,'student_id') ?>" class="btn btn-primary change-pass-btn">Reset Password</a>
+        <a href="reset_student_password.php?id=<?= s($student,'student_id') ?>" class="btn btn-primary change-pass-btn">Reset Password</a>
         <form method="post" action="delete_student.php" onsubmit="return confirm('Delete this student?');">
             <input type="hidden" name="student_id" value="<?= s($student,'student_id') ?>">
             <button type="submit" class="btn btn-danger">Delete</button>
@@ -266,9 +271,9 @@ $back_url = "/workshop2/students/student.php";
 <div>
     <div class="detail-title">Student Status</div>
     <div class="detail-value">
-        <?php $status = strtolower(s($student,'student_status','active')); ?>
+        <?php $status = strtolower(s($student,'status','active')); ?>
         <span class="student-status <?= $status ?>">
-            <?= htmlspecialchars(s($student,'student_status','Active')) ?>
+            <?= htmlspecialchars(s($student,'status','Active')) ?>
         </span>
     </div>
 </div>
@@ -280,7 +285,7 @@ $back_url = "/workshop2/students/student.php";
 
 <div>
     <div class="detail-title">IC</div>
-    <div class="detail-value"><?= s($student,'student_ic') ?></div>
+    <div class="detail-value"><?= mask_ic(s($student,'student_ic')) ?></div>
 </div>
 
 <div>

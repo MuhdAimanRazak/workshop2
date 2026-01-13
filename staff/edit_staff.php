@@ -14,7 +14,7 @@ if ($staff_id === '') {
 /* =========================
    FETCH STAFF
 ========================= */
-$sql = "SELECT staff_id, full_name, email, phone_no, staff_ic, address, role
+$sql = "SELECT staff_id, full_name, email, phone_no, staff_ic, address, role, status
         FROM staff
         WHERE staff_id = ?
         LIMIT 1";
@@ -31,6 +31,12 @@ if ($result->num_rows === 0) {
 
 $staff = $result->fetch_assoc();
 
+/* Mask IC */
+function mask_ic($ic) {
+    if (!$ic) return '—';
+    return substr($ic, 0, 8) . '****';
+}
+
 /* =========================
    UPDATE STAFF
 ========================= */
@@ -38,14 +44,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $full_name = $_POST['full_name'];
     $phone_no  = $_POST['phone_no'];
-    $staff_ic  = $_POST['staff_ic'];
     $email     = $_POST['email'];
     $address   = $_POST['address'];
-    $role      = $_POST['role'];
+    
+    // Only admin can change role and status
+    if ($current_user_role == 'admin') {
+        $staff_role = $_POST['role'];
+        $staff_status = $_POST['status'];
+    } else {
+        // Keep existing role and status if not admin
+        $staff_role = $staff['role'];
+        $staff_status = $staff['status'];
+    }
 
     $update = $conn->prepare(
         "UPDATE staff
-         SET full_name=?, phone_no=?, staff_ic=?, email=?, address=?, role=?
+         SET full_name=?, phone_no=?, email=?, address=?, role=?, status=?
          WHERE staff_id=?"
     );
 
@@ -53,10 +67,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         "sssssss",
         $full_name,
         $phone_no,
-        $staff_ic,
         $email,
         $address,
-        $role,
+        $staff_role,
+        $staff_status,
         $staff_id
     );
 
@@ -107,6 +121,12 @@ html, body {
     border-radius:8px;
     border:1px solid #e1e6f3;
 }
+.form-group input:disabled,
+.form-group select:disabled {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    cursor: not-allowed;
+}
 .full-row { grid-column:1/-1; }
 .btn-row {
     display:flex;
@@ -122,13 +142,18 @@ html, body {
 
 <h3>Edit Staff</h3>
 
-<form method="post">
+<form method="post" onsubmit="return confirm('Are you sure you want to save these changes?');">
 
 <div class="edit-row">
 
     <div class="form-group">
         <label>Staff ID</label>
         <input type="text" value="<?= htmlspecialchars($staff['staff_id']) ?>" disabled>
+    </div>
+
+    <div class="form-group">
+        <label>IC Number</label>
+        <input type="text" value="<?= mask_ic($staff['staff_ic']) ?>" disabled>
     </div>
 
     <div class="form-group">
@@ -144,12 +169,6 @@ html, body {
     </div>
 
     <div class="form-group">
-        <label>IC Number</label>
-        <input type="text" name="staff_ic"
-               value="<?= htmlspecialchars($staff['staff_ic']) ?>" required>
-    </div>
-
-    <div class="form-group">
         <label>Email</label>
         <input type="email" name="email"
                value="<?= htmlspecialchars($staff['email']) ?>" required>
@@ -157,12 +176,32 @@ html, body {
 
     <div class="form-group">
         <label>Role</label>
-        <select name="role" required>
+        <select name="role" <?= $current_user_role != 'admin' ? 'disabled' : '' ?> required>
             <option value="">-- Select Role --</option>
             <option value="admin"  <?= $staff['role']=='admin'?'selected':'' ?>>Admin</option>
             <option value="warden" <?= $staff['role']=='warden'?'selected':'' ?>>Warden</option>
             <option value="staff"  <?= $staff['role']=='staff'?'selected':'' ?>>Staff</option>
         </select>
+        <?php if ($current_user_role != 'admin'): ?>
+            <small style="color: #6c757d; display: block; margin-top: 4px;">
+                Only admins can change roles
+            </small>
+        <?php endif; ?>
+    </div>
+
+    <div class="form-group">
+        <label>Status</label>
+        <select name="status" <?= $current_user_role != 'admin' ? 'disabled' : '' ?> required>
+            <option value="">-- Select Status --</option>
+            <option value="active"    <?= $staff['status']=='active'?'selected':'' ?>>Active</option>
+            <option value="on_leave"  <?= $staff['status']=='on_leave'?'selected':'' ?>>On Leave</option>
+            <option value="archived"  <?= $staff['status']=='archived'?'selected':'' ?>>Archived</option>
+        </select>
+        <?php if ($current_user_role != 'admin'): ?>
+            <small style="color: #6c757d; display: block; margin-top: 4px;">
+                Only admins can change status
+            </small>
+        <?php endif; ?>
     </div>
 
     <div class="form-group full-row">

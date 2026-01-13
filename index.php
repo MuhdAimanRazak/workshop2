@@ -42,19 +42,19 @@
                 <form method="post" action="log/login.php">
 
                     <div class="field">
-                        <input type="text" name="username" required>
+                        <input type="text" name="idpengguna" required>
                         <span>Username</span>
                     </div>
 
                     <div class="field">
-                        <input type="password" name="password" id="password" required>
+                        <input type="password" name="katalaluan" id="password" required>
                         <span>Password</span>
                         <i onclick="togglePassword()">👁️</i>
                     </div>
 
                     <div class="row">
                         <label><input type="checkbox" name="remember"> Remember Me</label>
-                        <a href="#">Forgot Password?</a>
+                        <a href="../staff/forgot_password.php">Forgot Password?</a>
                     </div>
 
                     <button type="submit">Log In</button>

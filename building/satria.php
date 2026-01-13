@@ -1,0 +1,134 @@
+<?php
+include("../page/header.php");
+?>
+<main>
+    <style>
+        li {
+            list-style-type: none;
+        }
+        a {
+            text-decoration: none;
+        }
+    </style>
+
+    <div class="container-fluid px-4">
+        <h1 class="mt-4">Building</h1>
+        <ol class="breadcrumb mb-4">
+            <li class="breadcrumb-item active">Satria</li>
+        </ol>
+
+        <div class="row">
+
+            <!-- View Hostel -->
+            <div class="col-xl-4 col-md-6">
+                <a href="building.php">
+                    <div class="card bg-purple text-white mb-4">
+                        <div class="card-body d-flex justify-content-between align-items-center"><a>Lekiu (Woman)</a>
+                            <img src="../logo02.png" alt="Logo" class="logo2-img">
+                        </div>
+                        <div class="card-footer d-flex align-items-center justify-content-between">
+                            <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                                                                                <?php
+                        $query = "SELECT COUNT(*) as row_count FROM room";
+                        $result = mysqli_query($conn, $query);
+                        $row = mysqli_fetch_assoc($result);
+                        $rowCount = $row['row_count']; ?>
+                        <a class="small text-white stretched-link">Total room :
+                            <?php echo $rowCount; ?>
+                        </a>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- View Booking Request -->
+            <div class="col-xl-4 col-md-6">
+                <a href="building.php">
+                    <div class="card bg-purple text-white mb-4">
+                        <div class="card-body d-flex justify-content-between align-items-center"><a>Lekir (Woman)</a>
+                            <img src="../logo02.png" alt="Logo" class="logo2-img">
+                        </div>
+                        <div class="card-footer d-flex align-items-center justify-content-between">
+                            <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                                                                                <?php
+                        $query = "SELECT COUNT(*) as row_count FROM room";
+                        $result = mysqli_query($conn, $query);
+                        $row = mysqli_fetch_assoc($result);
+                        $rowCount = $row['row_count']; ?>
+                        <a class="small text-white stretched-link">Total room :
+                            <?php echo $rowCount; ?>
+                        </a>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <!-- View Report -->
+            <div class="col-xl-4 col-md-6">
+                <a href="building.php">
+                    <div class="card bg-purple text-white mb-4">
+                        <div class="card-body d-flex justify-content-between align-items-center"><a>Jebat (Man)</a>
+                            <img src="../logo02.png" alt="Logo" class="logo2-img">
+                        </div>
+                        <div class="card-footer d-flex align-items-center justify-content-between">
+                            <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                                                                                <?php
+                        $query = "SELECT COUNT(*) as row_count FROM room";
+                        $result = mysqli_query($conn, $query);
+                        $row = mysqli_fetch_assoc($result);
+                        $rowCount = $row['row_count']; ?>
+                        <a class="small text-white stretched-link">Total room :
+                            <?php echo $rowCount; ?>
+                        </a>
+                        </div>
+                    </div>
+                </a>
+            </div>
+                        <!-- View Report -->
+            <div class="col-xl-4 col-md-6">
+                <a href="building.php">
+                    <div class="card bg-purple text-white mb-4">
+                        <div class="card-body d-flex justify-content-between align-items-center"><a>Tuah (Man)</a>
+                            <img src="../logo02.png" alt="Logo" class="logo2-img">
+                        </div>
+                        <div class="card-footer d-flex align-items-center justify-content-between">
+                            <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                                                    <?php
+                        $query = "SELECT COUNT(*) as row_count FROM room";
+                        $result = mysqli_query($conn, $query);
+                        $row = mysqli_fetch_assoc($result);
+                        $rowCount = $row['row_count']; ?>
+                        <a class="small text-white stretched-link">Total room :
+                            <?php echo $rowCount; ?>
+                        </a>
+                        </div>
+                    </div>
+                </a>
+            </div>
+                        <!-- View Report -->
+            <div class="col-xl-4 col-md-6">
+                <a href="building.php">
+                    <div class="card bg-purple text-white mb-4">
+                        <div class="card-body d-flex justify-content-between align-items-center"><a>Kasturi (Man)</a>
+                            <img src="../logo02.png" alt="Logo" class="logo2-img">
+                        </div>
+                        <div class="card-footer d-flex align-items-center justify-content-between">
+                            <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                                                                                <?php
+                        $query = "SELECT COUNT(*) as row_count FROM room";
+                        $result = mysqli_query($conn, $query);
+                        $row = mysqli_fetch_assoc($result);
+                        $rowCount = $row['row_count']; ?>
+                        <a class="small text-white stretched-link">Total room :
+                            <?php echo $rowCount; ?>
+                        </a>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+        </div>
+    </div>
+</main>
+<?php
+include("../page/footer.php");
+?>

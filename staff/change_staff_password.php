@@ -1,18 +1,19 @@
 <?php
-include("../config/config.php");
+ob_start();
+include("../page/header.php");
 
 /* =========================
-   GET STAFF ID
+   CHANGE OWN PASSWORD ONLY
 ========================= */
-$staff_id = $_GET['id'] ?? '';
+$staff_id = $current_user_id;
 
-if ($staff_id === '') {
+if (empty($staff_id)) {
     header("Location: staff.php");
     exit;
 }
 
 /* =========================
-   FETCH STAFF (for name)
+   FETCH STAFF NAME
 ========================= */
 $stmt = $conn->prepare("SELECT full_name FROM staff WHERE staff_id = ?");
 $stmt->bind_param("s", $staff_id);
@@ -33,8 +34,8 @@ $msg = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    $new_password     = $_POST['new_password'];
-    $confirm_password = $_POST['confirm_password'];
+    $new_password     = $_POST['new_password'] ?? '';
+    $confirm_password = $_POST['confirm_password'] ?? '';
 
     if (strlen($new_password) < 6) {
         $msg = "<div class='alert alert-danger'>Password must be at least 6 characters.</div>";
@@ -51,17 +52,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $update->bind_param("ss", $hashed, $staff_id);
         $update->execute();
 
-        header("Location: staff_details.php?id=".$staff_id);
+        header("Location: ../dash/index.php");
         exit;
     }
 }
 ?>
 
-<?php include("../page/header.php"); ?>
-
 <main>
 <style>
-/* ===== SAME UI AS STUDENT EDIT ===== */
 .edit-page {
     max-width: 700px;
     margin: 3rem auto;
@@ -69,6 +67,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     border-radius: 12px;
     box-shadow: 0 12px 30px rgba(0,0,0,0.06);
     padding: 2rem;
+}
+.form-group {
+    position: relative;
 }
 .form-group label {
     font-weight:600;
@@ -80,6 +81,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     padding:.5rem .65rem;
     border-radius:8px;
     border:1px solid #e1e6f3;
+    padding-right:45px;
+}
+.eye-btn {
+    position:absolute;
+    right:12px;
+    top:36px;
+    cursor:pointer;
+}
+.eye-btn img {
+    width:20px;
+    height:20px;
 }
 .btn-row {
     display:flex;
@@ -87,7 +99,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     gap:.6rem;
     margin-top:1rem;
 }
-.btn-row .btn { border-radius:999px; }
+.btn-row .btn {
+    border-radius:999px;
+}
 </style>
 
 <div class="container">
@@ -100,20 +114,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <?= $msg ?>
 
-<form method="post">
+<form method="post" autocomplete="off" onsubmit="return confirmChange();">
 
     <div class="form-group">
         <label>New Password</label>
-        <input type="password" name="new_password" required>
+        <input type="password"
+               id="new_password"
+               name="new_password"
+               autocomplete="new-password"
+               required>
+        <span class="eye-btn"
+              onclick="togglePassword('new_password', this)">
+            <img src="../assets/icons/eye.png" alt="Show password">
+        </span>
     </div>
 
     <div class="form-group">
         <label>Confirm Password</label>
-        <input type="password" name="confirm_password" required>
+        <input type="password"
+               id="confirm_password"
+               name="confirm_password"
+               autocomplete="new-password"
+               required>
+        <span class="eye-btn"
+              onclick="togglePassword('confirm_password', this)">
+            <img src="../assets/icons/eye.png" alt="Show password">
+        </span>
     </div>
 
     <div class="btn-row">
-        <a href="staff_details.php?id=<?= $staff_id ?>" class="btn btn-outline-secondary">
+        <a href="../dash/index.php" class="btn btn-outline-secondary">
             Cancel
         </a>
         <button type="submit" class="btn btn-success">
@@ -126,5 +156,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 </div>
 </main>
+
+<script>
+function togglePassword(inputId, iconWrapper) {
+    const input = document.getElementById(inputId);
+    const img   = iconWrapper.querySelector("img");
+
+    if (input.type === "password") {
+        input.type = "text";
+        img.src = "../assets/icons/eye-off.png";
+        img.alt = "Hide password";
+    } else {
+        input.type = "password";
+        img.src = "../assets/icons/eye.png";
+        img.alt = "Show password";
+    }
+}
+
+/* ===== DOUBLE CONFIRMATION ===== */
+function confirmChange() {
+    const p1 = document.getElementById('new_password').value;
+    const p2 = document.getElementById('confirm_password').value;
+
+    if (p1 !== p2) {
+        alert("Passwords do not match.");
+        return false;
+    }
+
+    return confirm(
+        "⚠ Are you sure you want to change your password?\n\nYou will need to use the new password next time you log in."
+    );
+}
+</script>
 
 <?php include("../page/footer.php"); ?>

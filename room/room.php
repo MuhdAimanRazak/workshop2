@@ -12,6 +12,19 @@ if (!isset($conn) || !$conn) {
 $block_id = $_GET['block_id'] ?? '';
 
 /* ======================
+   RESET ROOM STATUS BY BLOCK
+====================== */
+if (isset($_GET['action']) && $_GET['action'] === 'reset_all' && $block_id !== '') {
+    $resetSql = "UPDATE room SET status_bed = 'available' WHERE block_id = ?";
+    $stmtReset = $conn->prepare($resetSql);
+    $stmtReset->bind_param("i", $block_id);
+    $stmtReset->execute();
+
+    header("Location: room.php?block_id=$block_id&reset=success");
+    exit;
+}
+
+/* ======================
    PAGINATION CONFIG
 ====================== */
 $limit = 5;
@@ -40,18 +53,8 @@ $end = min($offset + $limit, $totalRows);
 
 <main>
 <style>
-    /* ===============================
-   FORCE FULL WHITE BACKGROUND
-================================ */
-html, body {
-    background: #ffffff !important;
-    margin: 0;
-    padding: 0;
-}
-.table th, .table td {
-    vertical-align: middle;
-    background-color: #ffffff !important;
-}
+html, body { background: #ffffff !important; margin: 0; padding: 0; }
+.table th, .table td { vertical-align: middle; background-color: #ffffff !important; }
 .table thead { background-color: #f8f9fa !important; }
 
 .room-banner {
@@ -64,7 +67,7 @@ html, body {
     border-radius: 10px;
 }
 
-.room-search-wrapper { width:70%; position:relative; }
+.room-search-wrapper { width:60%; position:relative; }
 .room-search-input { border-radius:50px; padding-right:3.2rem; height:48px; }
 
 .room-search-btn {
@@ -87,20 +90,12 @@ html, body {
     margin:1rem 0;
 }
 
-.status-badge {
-    padding:.35rem .75rem;
-    border-radius:50px;
-    font-size:.85rem;
-}
+.status-badge { padding:.35rem .75rem; border-radius:50px; font-size:.85rem; }
 .status-available { background:#d4edda; color:#155724; }
 .status-occupied { background:#fff3cd; color:#856404; }
 .status-maintenance { background:#f8d7da; color:#721c24; }
 
-.action-btns {
-    display:flex;
-    gap:.25rem;
-    justify-content:center;
-}
+.action-btns { display:flex; gap:.25rem; justify-content:center; }
 </style>
 
 <div class="container-fluid px-4">
@@ -110,7 +105,14 @@ html, body {
         <h1><i class="fas fa-door-open me-2"></i>Room Management</h1>
     </div>
 
-    <!-- Search (UNCHANGED) -->
+    <!-- Success message -->
+    <?php if (isset($_GET['reset']) && $_GET['reset'] === 'success'): ?>
+        <div class="alert alert-success">
+            ✅ Room statuses have been reset to <strong>AVAILABLE</strong> for this block.
+        </div>
+    <?php endif; ?>
+
+    <!-- Search and buttons -->
     <div class="d-flex justify-content-center mb-1">
         <div class="room-search-wrapper">
             <input id="roomSearch" class="form-control room-search-input" placeholder="Search here">
@@ -122,9 +124,13 @@ html, body {
         <a href="add_room.php" class="btn btn-success rounded-pill px-4 py-2 ms-3">
             <i class="fas fa-plus me-1"></i> Add Room
         </a>
+
+        <button class="btn btn-danger rounded-pill px-4 py-2 ms-2" onclick="confirmReset()">
+            <i class="fas fa-rotate-left me-1"></i> Reset Status
+        </button>
     </div>
 
-    <!-- Filters (UNCHANGED – JS ONLY) -->
+    <!-- Filters -->
     <div class="room-filters">
         <label><input type="radio" name="searchType" value="room_no" checked> Room No</label>
         <label><input type="radio" name="searchType" value="wing"> Wing</label>
@@ -261,6 +267,15 @@ function applySearch() {
         if(type==='status_bed') text=r.cells[6].innerText;
         r.style.display = text.toLowerCase().includes(q) ? '' : 'none';
     });
+}
+
+// Reset button with double confirmation
+function confirmReset() {
+    if (!confirm("Reset ALL room status to AVAILABLE for this block?")) return;
+    if (!confirm("This action cannot be undone.\nClick OK to confirm.")) return;
+
+    const blockId = "<?= $block_id ?>";
+    window.location.href = "?action=reset_all&block_id=" + blockId;
 }
 </script>
 

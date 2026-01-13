@@ -6,7 +6,6 @@ if (!$conn) {
     die("<div class='alert alert-danger'>Database connection failed</div>");
 }
 
-
 /* =========================
    PAGINATION
 ========================= */
@@ -21,15 +20,12 @@ $statusFilter = $_GET['status'] ?? '';
 $roleFilter   = $_GET['role'] ?? '';
 
 $where = [];
-
 if ($statusFilter !== '') {
     $where[] = "status = '".$conn->real_escape_string($statusFilter)."'";
 }
-
 if ($roleFilter !== '') {
     $where[] = "role = '".$conn->real_escape_string($roleFilter)."'";
 }
-
 $whereSQL = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
 /* =========================
@@ -54,94 +50,22 @@ $end   = min($offset + $limit, $totalStaff);
 ?>
 
 <main>
-
 <style>
-
-    /* ===============================
-   FORCE FULL WHITE BACKGROUND
-================================ */
-html, body {
-    background: #ffffff !important;
-    margin: 0;
-    padding: 0;
-}
-.table th, .table td {
-    vertical-align: middle;
-    background-color: #fff !important;
-}
-
-.student-banner {
-    margin-top: -6rem;
-    margin-bottom: -7rem;
-    display: flex;
-    justify-content: center;
-}
-
-.student-banner img {
-    max-width: 650px;
-    width: 100%;
-}
-
-.student-search-wrapper {
-    width: 420px;
-    position: relative;
-}
-
-.student-search-input {
-    border-radius: 50px;
-    padding-right: 3.2rem;
-    height: 48px;
-}
-
-.student-search-btn {
-    position: absolute;
-    right: 6px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: none;
-    background: #5f6dff;
-    color: #fff;
-}
-
-.student-filters {
-    display: flex;
-    justify-content: center;
-    gap: 1.5rem;
-    margin: .75rem 0 1.25rem;
-}
-
-.status-dot {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    margin-right: 6px;
-}
+html, body { background: #ffffff !important; margin:0; padding:0; }
+.table th, .table td { vertical-align: middle; background-color: #fff !important; }
+.student-banner { margin-top:-6rem; margin-bottom:-7rem; display:flex; justify-content:center; }
+.student-banner img { max-width:650px; width:100%; }
+.student-search-wrapper { width:420px; position:relative; }
+.student-search-input { border-radius:50px; padding-right:3.2rem; height:48px; }
+.student-search-btn { position:absolute; right:6px; top:50%; transform:translateY(-50%); width:40px; height:40px; border-radius:50%; border:none; background:#5f6dff; color:#fff; }
+.student-filters { display:flex; justify-content:center; gap:1.5rem; margin:.75rem 0 1.25rem; }
+.status-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; }
 .status-active { background:#2ecc71; }
 .status-leave { background:#f1c40f; }
 .status-archived { background:#bdc3c7; }
-
-#noResults {
-    display: none;
-    text-align: center;
-    font-weight: bold;
-    margin-top: 1rem;
-}
-
-/* Letak radio bawah search */
-.student-filters {
-    margin-top: 12px;       /* jarak dari search bar */
-    justify-content: center;
-}
-
-/* Optional – bagi nampak kemas */
-.student-filters label {
-    cursor: pointer;
-}
-
+#noResults { display:none; text-align:center; font-weight:bold; margin-top:1rem; }
+.student-filters { margin-top:12px; justify-content:center; }
+.student-filters label { cursor:pointer; }
 </style>
 
 <div class="container-fluid px-4">
@@ -154,12 +78,11 @@ html, body {
     <!-- SEARCH + FILTERS + ADD -->
     <div class="d-flex justify-content-center align-items-center gap-2 mb-2">
 
-        <!-- SEARCH (CLIENT SIDE – KEKAL) -->
+        <!-- SEARCH (CLIENT SIDE) -->
         <div class="student-search-wrapper">
             <input id="staffSearch" type="text"
                    class="form-control student-search-input"
-                   placeholder="Search by name"
-                   onkeyup="applySearch()">
+                   placeholder="Search by name">
             <button class="student-search-btn">
                 <i class="fas fa-search"></i>
             </button>
@@ -192,7 +115,7 @@ html, body {
         </a>
     </div>
 
-    <!-- SEARCH TYPE (KEKAL) -->
+    <!-- SEARCH TYPE (RADIO) -->
     <div class="student-filters">
         <label><input type="radio" name="searchType" value="name" checked> Name</label>
         <label><input type="radio" name="searchType" value="id"> Staff ID</label>
@@ -221,14 +144,12 @@ html, body {
                 </tr>
                 </thead>
                 <tbody>
-
                 <?php
                 if ($totalStaff == 0) {
                     echo "<tr><td colspan='7'>No results found</td></tr>";
                 } else {
                     $i = $start;
                     while ($row = $result->fetch_assoc()) {
-
                         if ($row['status'] == 'active') {
                             $status = "<span class='status-dot status-active'></span>Active";
                         } elseif ($row['status'] == 'on_leave') {
@@ -255,7 +176,6 @@ html, body {
                     }
                 }
                 ?>
-
                 </tbody>
             </table>
 
@@ -294,20 +214,64 @@ html, body {
 </div>
 
 <script>
-function applySearch() {
-    const q = document.getElementById('staffSearch').value.toLowerCase();
-    const type = document.querySelector('input[name="searchType"]:checked').value;
-    const rows = document.querySelectorAll('#staffTable tbody tr');
+// ================================
+// CLIENT-SIDE SEARCH + SORT
+// ================================
+const searchInput = document.getElementById('staffSearch');
+const radios = document.querySelectorAll('input[name="searchType"]');
+const table = document.getElementById('staffTable');
+const tbody = table.tBodies[0];
 
-    rows.forEach(row => {
-        let text = '';
-        if (type === 'name') text = row.cells[1].innerText.toLowerCase();
-        else if (type === 'id') text = row.cells[2].innerText.toLowerCase();
-        else text = row.cells[4].innerText.toLowerCase();
+let currentType = 'name';
 
-        row.style.display = text.includes(q) ? '' : 'none';
+radios.forEach(radio => {
+    radio.addEventListener('change', () => {
+        currentType = radio.value;
+        applySearchAndSort();
     });
+});
+
+searchInput.addEventListener('keyup', () => {
+    applySearchAndSort();
+});
+
+function applySearchAndSort() {
+    const q = searchInput.value.toLowerCase();
+    const rows = Array.from(tbody.rows);
+
+    // 1️⃣ FILTER
+    const filteredRows = rows.filter(row => {
+        let text = '';
+        if (currentType === 'name') text = row.cells[1].innerText.toLowerCase();
+        else if (currentType === 'id') text = row.cells[2].innerText.toLowerCase();
+        else text = row.cells[4].innerText.toLowerCase();
+        return text.includes(q);
+    });
+
+    // 2️⃣ SORT
+    let colIndex;
+    if (currentType === 'name') colIndex = 1;
+    else if (currentType === 'id') colIndex = 2;
+    else colIndex = 4;
+
+    filteredRows.sort((a, b) => {
+        const textA = a.cells[colIndex].innerText.toLowerCase();
+        const textB = b.cells[colIndex].innerText.toLowerCase();
+
+        // For numeric columns (ID / Phone), sort numerically
+        if (currentType === 'id' || currentType === 'phone') {
+            return parseInt(textA.replace(/\D/g,'')) - parseInt(textB.replace(/\D/g,''));
+        }
+        return textA.localeCompare(textB);
+    });
+
+    // 3️⃣ RENDER
+    tbody.innerHTML = '';
+    filteredRows.forEach(row => tbody.appendChild(row));
 }
+
+// Initial load
+applySearchAndSort();
 </script>
 
 </main>
