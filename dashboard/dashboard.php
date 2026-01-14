@@ -260,26 +260,13 @@ foreach ($stats as $s) {
     <div class="col-md-4 d-flex flex-column gap-4">
 
         <!-- STAFF INFO -->
-<div class="card shadow-sm">
-    <div class="card-body">
-        <h5 class="mb-3">Today’s Summary</h5>
-
-        <ul class="list-group">
-            <li class="list-group-item d-flex justify-content-between">
-                Pending Tasks
-                <span class="badge bg-warning">
-                    <?= $qMyTasks->num_rows ?>
-                </span>
-            </li>
-            <li class="list-group-item d-flex justify-content-between">
-                Reports Today
-                <span class="badge bg-primary">
-                    <?= $qRecent->num_rows ?>
-                </span>
-            </li>
-        </ul>
-    </div>
-</div>
+        <div class="card shadow-sm text-center">
+            <div class="card-body">
+                <h6 class="text-muted">Logged in as</h6>
+                <h4 class="fw-bold text-primary"><?= htmlspecialchars($username) ?></h4>
+                <span class="badge bg-secondary">Staff</span>
+            </div>
+        </div>
 
         <!-- MAIN ACTION -->
         <div class="card shadow-sm text-center">

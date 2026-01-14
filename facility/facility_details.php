@@ -138,14 +138,6 @@ $back_url = "/facility/facility.php";
                     Edit
                 </a>
 
-                <form method="post" action="delete_facility.php"
-                      onsubmit="return confirm('Are you sure you want to delete this facility?');">
-                    <input type="hidden" name="facility_id" value="<?= s($facility,'facility_id') ?>">
-                    <button type="submit" class="btn btn-danger">
-                        Delete
-                    </button>
-                </form>
-
             </div>
         </div>
 
