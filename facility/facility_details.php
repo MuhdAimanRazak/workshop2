@@ -57,6 +57,11 @@ $back_url = "/facility/facility.php";
 
 <main>
 <style>
+    html, body {
+    background: #ffffff !important;
+    margin: 0;
+    padding: 0;
+}
 /* ===== Facility Details Styles ===== */
 .container-fluid { padding: 2.5rem; }
 .profile-shell {

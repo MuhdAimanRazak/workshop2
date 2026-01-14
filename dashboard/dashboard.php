@@ -39,14 +39,24 @@ elseif ($occupancy > 30) $barColor = 'bg-warning';
 /* =========================
    REPORT SUMMARY
 ========================= */
-$reportStats = ['New'=>0,'Pending'=>0,'Resolved'=>0];
+$reportStats = [
+    'New' => 0,
+    'Pending' => 0,
+    'Resolved' => 0
+];
+
 $qReports = $conn->query("
     SELECT report_status, COUNT(*) total 
     FROM report 
     GROUP BY report_status
 ");
+
 while ($r = $qReports->fetch_assoc()) {
-    $reportStats[$r['report_status']] = $r['total'];
+    if ($r['report_status'] === 'Completed') {
+        $reportStats['Resolved'] = $r['total'];
+    } else {
+        $reportStats[$r['report_status']] = $r['total'];
+    }
 }
 
 /* =========================

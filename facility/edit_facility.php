@@ -133,6 +133,12 @@ if ($blocks_result && $blocks_result->num_rows > 0) {
 <main>
 
 <style>
+
+    html, body {
+    background: #ffffff !important;
+    margin: 0;
+    padding: 0;
+}
 .edit-page {
     max-width: 1100px;
     margin: 3.25rem auto;
