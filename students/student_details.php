@@ -93,19 +93,28 @@ $back_url = "/workshop2/students/student.php";
     padding:2.25rem;
     box-shadow:0 8px 25px rgba(0,0,0,.05);
 }
+html, body {
+    background:#fff !important;
+    margin:0;
+    padding:0;
+}
 
 .profile-top {
     display:flex;
     align-items:center;
     position:relative;
 }
-
 .avatar-wrap {
-    width:120px;
-    height:120px;
+    width:110px;
+    height:110px;
     border-radius:50%;
     background:#e6eef8;
-    overflow:hidden;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:42px;
+    font-weight:700;
+    color:#4f7cff;
 }
 
 .avatar-wrap img {
@@ -243,22 +252,32 @@ $back_url = "/workshop2/students/student.php";
 <div class="profile-shell">
 
 <div class="profile-top">
-    <div class="avatar-wrap">
-        <img src="/workshop2/assets/avatar-default.png">
-    </div>
+<div class="avatar-wrap">
+    <?= strtoupper(substr(s($student,'full_name'), 0, 1)) ?>
+</div>
 
     <div class="profile-name">
         <?= htmlspecialchars(s($student,'full_name')) ?>
     </div>
+<div class="edit-button-wrap">
+    <a href="editstudentprofile.php?id=<?= s($student,'student_id') ?>" class="btn btn-primary">
+        Edit
+    </a>
 
-    <div class="edit-button-wrap">
-        <a href="editstudentprofile.php?id=<?= s($student,'student_id') ?>" class="btn btn-primary">Edit</a>
-        <a href="reset_student_password.php?id=<?= s($student,'student_id') ?>" class="btn btn-primary change-pass-btn">Reset Password</a>
-        <form method="post" action="delete_student.php" onsubmit="return confirm('Delete this student?');">
-            <input type="hidden" name="student_id" value="<?= s($student,'student_id') ?>">
-            <button type="submit" class="btn btn-danger">Delete</button>
-        </form>
-    </div>
+    <a 
+       href="view_electrical_form.php?id=<?= s($student,'student_id') ?>" 
+       class="btn btn-outline-primary"
+    >
+        Electrical Form
+    </a>
+
+    <a href="reset_student_password.php?id=<?= s($student,'student_id') ?>" 
+       class="btn btn-primary change-pass-btn">
+        Reset Password
+    </a>
+
+</div>
+
 </div>
 
 <div class="profile-details">

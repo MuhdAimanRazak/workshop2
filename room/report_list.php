@@ -2,12 +2,28 @@
 include("../page/header.php");
 include("../config/config.php");
 
+// =========================
+// STATUS ENUM MAPPING
+// UI <-> DATABASE
+// =========================
+$statusUiToDb = [
+    'New'      => 'New',
+    'Pending'  => 'In Progress',
+    'Resolved' => 'Completed'
+];
+
+$statusDbToUi = [
+    'New'         => 'New',
+    'In Progress' => 'Pending',
+    'Completed'   => 'Resolved'
+];
+
 if (!$conn) {
     die("<div class='alert alert-danger'>Database connection failed</div>");
 }
 
 /* =========================
-   BUILDING FILTER (DEFINE FIRST)
+   BUILDING FILTER
 ========================= */
 $buildingId = isset($_GET['building_id']) && is_numeric($_GET['building_id'])
     ? (int)$_GET['building_id']
@@ -35,8 +51,11 @@ if ($buildingId !== null) {
 }
 
 if ($statusFilter !== '') {
-    $where[] = "r.report_status = '".$conn->real_escape_string($statusFilter)."'";
+    // UI -> DB enum
+    $dbStatus = $statusUiToDb[$statusFilter] ?? $statusFilter;
+    $where[] = "r.report_status = '".$conn->real_escape_string($dbStatus)."'";
 }
+
 
 $whereSQL = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
@@ -50,12 +69,20 @@ $statSql = "
     GROUP BY report_status
 ";
 
-$stats = ['New'=>0,'Pending'=>0,'Resolved'=>0];
+$stats = [
+    'New' => 0,
+    'Pending' => 0,
+    'Resolved' => 0
+];
+
 $statRes = $conn->query($statSql);
 
 while ($row = $statRes->fetch_assoc()) {
-    $stats[$row['report_status']] = $row['total'];
+    // DB -> UI enum
+    $uiStatus = $statusDbToUi[$row['report_status']] ?? $row['report_status'];
+    $stats[$uiStatus] = $row['total'];
 }
+
 
 /* =========================
    COUNT FOR PAGINATION
@@ -93,21 +120,26 @@ $end   = min($offset + $limit, $totalReports);
 
 <main>
 <style>
-html, body { background:#ffffff !important; margin:0; padding:0; }
+html, body {
+    background:#f6f8fc !important;
+}
 
+/* =========================
+   WRAPPER
+========================= */
 .report-wrapper {
     background:#fff;
     border-radius:24px;
-    padding:3.5rem 3rem;
-    padding-bottom:12rem;
+    padding:3.5rem 3rem 10rem;
     box-shadow:0 12px 30px rgba(0,0,0,.08);
-    position:relative;
 }
 
-/* BANNER */
+/* =========================
+   BANNER
+========================= */
 .report-banner {
     margin-top:-6rem;
-    margin-bottom:-14rem;
+    margin-bottom:-12rem;
     display:flex;
     justify-content:center;
 }
@@ -116,55 +148,99 @@ html, body { background:#ffffff !important; margin:0; padding:0; }
     width:100%;
 }
 
-/* GRID (REUSED FROM ROOM PAGE) */
-.student-section { margin-top:6rem; }
+/* =========================
+   STATUS CARD GRID
+========================= */
+.student-section {
+    margin-top:6rem;
+}
+
 .student-card-grid {
     display:grid;
     grid-template-columns:repeat(3,220px);
     gap:2rem;
     justify-content:center;
 }
+
+/* =========================
+   BASE CARD
+========================= */
 .student-card {
-    background: #ffffff;
-    border-radius:10px;
-    padding:2rem 1.5rem;
     height:170px;
+    border-radius:16px;
+    padding:1.8rem 1.5rem;
     display:flex;
     flex-direction:column;
     justify-content:space-between;
-    color:#fff;
-    text-decoration:none;
     position:relative;
-    box-shadow:0 12px 25px rgba(0,0,0,.12);
-    transition:.25s;
+    text-decoration:none;
+    box-shadow:0 10px 26px rgba(0,0,0,.08);
+    transition:all .25s ease;
+    overflow:hidden;
 }
+
 .student-card:hover {
     transform:translateY(-6px);
+    box-shadow:0 18px 40px rgba(0,0,0,.12);
 }
+
+/* =========================
+   GRADIENTS (LIKE DASHBOARD)
+========================= */
+.card-new {
+    background:linear-gradient(135deg,#eaf2ff,#dbe9ff);
+    color:#2456c3;
+}
+
+.card-pending {
+    background:linear-gradient(135deg,#ffecec,#ffd6d6);
+    color:#b42323;
+}
+
+.card-resolved {
+    background:linear-gradient(135deg,#e9fff3,#d6f5e6);
+    color:#1f9254;
+}
+
+/* =========================
+   TEXT
+========================= */
 .card-text {
-    font-size:1rem;
+    font-size:1.05rem;
     font-weight:800;
     letter-spacing:.5px;
 }
-.student-card img {
-    width:90px;
-    max-height:90px;
-    object-fit:contain;
-    position:absolute;
-    bottom:15px;
-    right:10px;
+
+.card-text small {
+    font-size:.85rem;
+    opacity:.85;
 }
 
-/* SEARCH */
+/* =========================
+   ICON
+========================= */
+.student-card img {
+    width:90px;
+    position:absolute;
+    bottom:10px;
+    right:10px;
+    opacity:.85;
+}
+
+/* =========================
+   SEARCH
+========================= */
 .report-search-wrapper {
     width:420px;
     position:relative;
 }
+
 .report-search-input {
     border-radius:50px;
     padding-right:3.2rem;
     height:48px;
 }
+
 .report-search-btn {
     position:absolute;
     right:6px;
@@ -178,45 +254,15 @@ html, body { background:#ffffff !important; margin:0; padding:0; }
     color:#fff;
 }
 
-/* FILTER */
+/* =========================
+   FILTER
+========================= */
 .report-filters {
     display:flex;
     justify-content:center;
     gap:1.5rem;
     margin:12px 0 1.25rem;
 }
-
-/* FORCE INITIAL TEXT COLOR BLACK */
-.student-card {
-    color: #2997beff !important;
-}
-
-.student-card .card-text {
-    color: #2997beff !important;
-}
-
-.student-card .card-text small {
-    color: #2997beff !important;
-    opacity: 0.8;
-}
-
-/* CUSTOM VIEW BUTTON */
-.btn-view {
-    background-color: #18258aff !important;   /* sama tone  card */
-    color: #fff;
-    border: none;
-    border-radius: 999px;
-    padding: 6px 22px;
-    font-weight: 600;
-    transition: all 0.25s ease;
-}
-
-.btn-view:hover {
-    background-color: #102093ff !important;
-    color: #fff;
-}
-
-
 </style>
 
 <div class="container-fluid px-4">
@@ -231,28 +277,31 @@ html, body { background:#ffffff !important; margin:0; padding:0; }
     <div class="student-section">
         <div class="student-card-grid">
 
-            <a href="?building_id=<?= $buildingId ?>&status=New" class="student-card">
+            <a href="?building_id=<?= $buildingId ?>&status=New"
+               class="student-card card-new">
                 <span class="card-text">
                     NEW<br>
                     <small><?= $stats['New'] ?> Reports</small>
                 </span>
-                <img src="../new.png" alt="New">
+                <img src="../new.png">
             </a>
 
-            <a href="?building_id=<?= $buildingId ?>&status=Pending" class="student-card">
+            <a href="?building_id=<?= $buildingId ?>&status=Pending"
+               class="student-card card-pending">
                 <span class="card-text">
                     PENDING<br>
                     <small><?= $stats['Pending'] ?> Reports</small>
                 </span>
-                <img src="../pending.png" alt="Pending">
+                <img src="../pending.png">
             </a>
 
-            <a href="?building_id=<?= $buildingId ?>&status=Resolved" class="student-card">
+            <a href="?building_id=<?= $buildingId ?>&status=Resolved"
+               class="student-card card-resolved">
                 <span class="card-text">
                     RESOLVED<br>
                     <small><?= $stats['Resolved'] ?> Reports</small>
                 </span>
-                <img src="../resolved.png" alt="Resolved">
+                <img src="../resolved.png">
             </a>
 
         </div>
@@ -261,11 +310,13 @@ html, body { background:#ffffff !important; margin:0; padding:0; }
     <!-- SEARCH + FILTER -->
     <div class="d-flex justify-content-center align-items-center gap-2 mt-5 mb-2">
         <div class="report-search-wrapper">
-            <input id="reportSearch" type="text"
+            <input id="reportSearch"
                    class="form-control report-search-input"
                    placeholder="Search"
                    onkeyup="applySearch()">
-            <button class="report-search-btn"><i class="fas fa-search"></i></button>
+            <button class="report-search-btn">
+                <i class="fas fa-search"></i>
+            </button>
         </div>
 
         <select class="form-select rounded-pill px-3"
@@ -292,7 +343,7 @@ html, body { background:#ffffff !important; margin:0; padding:0; }
                 Showing <?= $start ?> to <?= $end ?> of <b><?= $totalReports ?></b> reports
             </div>
 
-            <table id="reportTable" class="table table-bordered text-center align-middle">
+            <table id="reportTable" class="table table-bordered align-middle text-center">
                 <thead>
                 <tr>
                     <th>Bil.</th>
@@ -305,31 +356,34 @@ html, body { background:#ffffff !important; margin:0; padding:0; }
                 </tr>
                 </thead>
                 <tbody>
+              <?php
+if ($totalReports == 0) {
+    echo "<tr><td colspan='7'>No reports found</td></tr>";
+} else {
+    $i = $start;
+    while ($row = $result->fetch_assoc()) {
 
-                <?php
-                if ($totalReports == 0) {
-                    echo "<tr><td colspan='7'>No reports found</td></tr>";
-                } else {
-                    $i = $start;
-                    while ($row = $result->fetch_assoc()) {
-                        echo "
-                        <tr>
-                            <td>$i</td>
-                            <td class='text-start'>".htmlspecialchars($row['report_title'])."</td>
-                            <td>".htmlspecialchars($row['student_id'])."</td>
-                            <td>".htmlspecialchars($row['report_location'])."</td>
-                            <td>".htmlspecialchars($row['report_status'])."</td>
-                            <td>".htmlspecialchars($row['created_at'])."</td>
-                            <td>
-                                <a href='view_report.php?id={$row['report_id']}'
-                                   class='btn btn-info btn-sm rounded-pill px-4'>View</a>
-                            </td>
-                        </tr>";
-                        $i++;
-                    }
-                }
-                ?>
+        $uiStatus = $statusDbToUi[$row['report_status']] ?? $row['report_status'];
 
+        echo "
+        <tr>
+            <td>$i</td>
+            <td class='text-start'>".htmlspecialchars($row['report_title'])."</td>
+            <td>".htmlspecialchars($row['student_id'])."</td>
+            <td>".htmlspecialchars($row['report_location'])."</td>
+            <td>".htmlspecialchars($uiStatus)."</td>
+            <td>".htmlspecialchars($row['created_at'])."</td>
+            <td>
+                <a href='view_report.php?id={$row['report_id']}'
+                   class='btn btn-info btn-sm rounded-pill px-4'>
+                   View
+                </a>
+            </td>
+        </tr>";
+        $i++;
+    }
+}
+?>
                 </tbody>
             </table>
         </div>
@@ -353,7 +407,6 @@ function applySearch() {
     });
 }
 </script>
-
 </main>
 
 <?php include("../page/footer.php"); ?>

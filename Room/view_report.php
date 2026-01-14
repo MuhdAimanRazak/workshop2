@@ -7,7 +7,7 @@ include("../config/config.php");
 $report_id = $_GET['id'] ?? '';
 
 if ($report_id === '') {
-    header("Location: /workshop2/Room/report.php");
+    header("Location: /workshop2/room/report_list.php");
     exit;
 }
 
@@ -39,13 +39,11 @@ if ($result->num_rows === 0) {
 $report = $result->fetch_assoc();
 
 /* ======================
-   Helper function
+   HELPER
 ====================== */
 function s($arr, $key, $default = '') {
     return isset($arr[$key]) ? htmlspecialchars($arr[$key]) : $default;
 }
-
-$back_url = "/workshop2/Room/report.php";
 ?>
 
 <?php include("../page/header.php"); ?>
@@ -83,25 +81,9 @@ html, body { background:#ffffff !important; margin:0; padding:0; }
     display:inline-block;
 }
 
-.badge-new {
-    background:#e3f2fd;
-    color:#1565c0;
-}
-
-.badge-progress {
-    background:#fff8e1;
-    color:#ff8f00;
-}
-
-.badge-resolved {
-    background:#e7f7ee;
-    color:#1e8e5a;
-}
-
-.badge-rejected {
-    background:#fdecea;
-    color:#c62828;
-}
+.badge-new { background:#e3f2fd; color:#1565c0; }
+.badge-progress { background:#fff8e1; color:#ff8f00; }
+.badge-resolved { background:#e7f7ee; color:#1e8e5a; }
 
 .profile-details {
     display:grid;
@@ -117,25 +99,23 @@ html, body { background:#ffffff !important; margin:0; padding:0; }
     text-transform:uppercase;
 }
 
-.detail-value {
-    font-weight:600;
-}
+.detail-value { font-weight:600; }
 
-.student-back {
-    margin-bottom:1rem;
-}
-
+.student-back { margin-bottom:1rem; }
 .full-row { grid-column:1/-1; }
 
 .edit-btn {
-    white-space:nowrap;
+    min-width:150px;
+    font-weight:600;
 }
 </style>
 
 <div class="container-fluid">
 
+    <!-- BACK TO LIST (BETUL IKUT FILE KAU) -->
     <div class="student-back">
-        <a href="<?= $back_url ?>" class="text-decoration-none text-dark">
+        <a href="report_list.php"
+           class="text-decoration-none text-dark">
             ← Back to Report List
         </a>
     </div>
@@ -152,17 +132,18 @@ html, body { background:#ffffff !important; margin:0; padding:0; }
 
                 <?php
                 $status = $report['report_status'];
-                $statusClass = match ($status) {
-                    'New'         => 'badge-new',
-                    'In Progress' => 'badge-progress',
-                    'Resolved'    => 'badge-resolved',
-                    'Rejected'    => 'badge-rejected',
-                    default       => 'badge-new'
-                };
+   $statusClass = match ($status) {
+    'New'         => 'badge-new',
+    'In Progress' => 'badge-progress',
+    'Completed'   => 'badge-resolved',
+    default       => 'badge-new'
+};
+
                 ?>
 
                 <div class="badges mt-2">
-                    <span class="badge-status <?= $statusClass ?>">
+                    <span id="statusBadge"
+                          class="badge-status <?= $statusClass ?>">
                         <?= s($report,'report_status') ?>
                     </span>
                 </div>
@@ -176,10 +157,19 @@ html, body { background:#ffffff !important; margin:0; padding:0; }
                 </div>
             </div>
 
+            <!-- DROPDOWN CHANGE STATUS -->
             <div>
-                <a href="edit_report.php?id=<?= s($report,'report_id') ?>" class="btn btn-primary edit-btn">
-                    Edit Report
-                </a>
+<select class="form-select rounded-pill"
+        onchange="updateStatus(this, <?= (int)$report['report_id'] ?>)">
+    <option value="New" <?= $status=='New'?'selected':'' ?>>New</option>
+    <option value="In Progress" <?= $status=='In Progress'?'selected':'' ?>>
+        In Progress
+    </option>
+    <option value="Completed" <?= $status=='Completed'?'selected':'' ?>>
+        Completed
+    </option>
+</select>
+
             </div>
 
         </div>
@@ -211,6 +201,37 @@ html, body { background:#ffffff !important; margin:0; padding:0; }
 
     </div>
 </div>
+
+<!-- ======================
+     JAVASCRIPT
+====================== -->
+<script>
+function updateStatus(select, reportId) {
+    const status = select.value;
+
+    fetch("update_report_status.php", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: `report_id=${reportId}&status=${status}`
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.msg || "Update failed");
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Server error");
+    });
+}
+
+</script>
+
 </main>
 
 <?php include("../page/footer.php"); ?>
