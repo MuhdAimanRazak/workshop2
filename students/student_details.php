@@ -82,7 +82,6 @@ $back_url = "/workshop2/students/student.php";
 
 <?php include("../page/header.php"); ?>
 
-
 <main>
 <style>
 .container-fluid { padding: 2.5rem; }
@@ -92,7 +91,10 @@ $back_url = "/workshop2/students/student.php";
     border-radius:12px;
     padding:2.25rem;
     box-shadow:0 8px 25px rgba(0,0,0,.05);
+    position: relative; /* REQUIRED for bottom-right button */
+    padding-bottom: 80px; /* ruang untuk button */
 }
+
 html, body {
     background:#fff !important;
     margin:0;
@@ -104,6 +106,7 @@ html, body {
     align-items:center;
     position:relative;
 }
+
 .avatar-wrap {
     width:110px;
     height:110px;
@@ -235,6 +238,13 @@ html, body {
     gap:1rem 2rem;
 }
 
+/* === ELECTRICAL FORM BUTTON (BOTTOM RIGHT) === */
+.electrical-float {
+    position:absolute;
+    bottom:20px;
+    right:20px;
+}
+
 @media (max-width:768px) {
     .profile-details,
     .hostel-grid-info {
@@ -252,32 +262,24 @@ html, body {
 <div class="profile-shell">
 
 <div class="profile-top">
-<div class="avatar-wrap">
-    <?= strtoupper(substr(s($student,'full_name'), 0, 1)) ?>
-</div>
+    <div class="avatar-wrap">
+        <?= strtoupper(substr(s($student,'full_name'), 0, 1)) ?>
+    </div>
 
     <div class="profile-name">
         <?= htmlspecialchars(s($student,'full_name')) ?>
     </div>
-<div class="edit-button-wrap">
-    <a href="editstudentprofile.php?id=<?= s($student,'student_id') ?>" class="btn btn-primary">
-        Edit
-    </a>
 
-    <a 
-       href="view_electrical_form.php?id=<?= s($student,'student_id') ?>" 
-       class="btn btn-outline-primary"
-    >
-        Electrical Form
-    </a>
+    <div class="edit-button-wrap">
+        <a href="editstudentprofile.php?id=<?= s($student,'student_id') ?>" class="btn btn-primary">
+            Edit
+        </a>
 
-    <a href="reset_student_password.php?id=<?= s($student,'student_id') ?>" 
-       class="btn btn-primary change-pass-btn">
-        Reset Password
-    </a>
-
-</div>
-
+        <a href="reset_student_password.php?id=<?= s($student,'student_id') ?>" 
+           class="btn btn-primary change-pass-btn">
+            Reset Password
+        </a>
+    </div>
 </div>
 
 <div class="profile-details">
@@ -379,6 +381,26 @@ html, body {
 </div>
 
 </div>
+
+<!-- ACTION BUTTONS (BOTTOM RIGHT) -->
+<div class="electrical-float">
+
+    <a
+        href="registration_form.php?id=<?= s($student,'student_id') ?>"
+        class="btn btn-primary"
+    >
+        Registration Form
+    </a>
+
+    <a 
+        href="view_electrical_form.php?id=<?= s($student,'student_id') ?>" 
+        class="btn btn-outline-primary"
+    >
+        Electrical Form
+    </a>
+
+</div>
+
 </div>
 </div>
 </main>
