@@ -1,6 +1,9 @@
 <?php
 include("../config/config.php");
 
+/* =========================
+   HANDLE UPDATE (POST)
+========================= */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $facility_id   = $_POST['facility_id'];
@@ -10,12 +13,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $start_date    = !empty($_POST['start_date']) ? $_POST['start_date'] : NULL;
     $end_date      = !empty($_POST['end_date']) ? $_POST['end_date'] : NULL;
 
-    // If status is Available, clear dates
+    // If Available → clear dates
     if ($status === 'Available') {
         $start_date = NULL;
-        $end_date = NULL;
+        $end_date   = NULL;
     }
 
+    /* =========================
+       UPDATE FACILITY
+    ========================= */
     $sql = "UPDATE facility SET
                 block_id = ?,
                 facility_name = ?,
@@ -34,10 +40,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $end_date,
         $facility_id
     );
-
     $stmt->execute();
 
-    header("Location: facility_details.php?id=".$facility_id);
+    /* ======================================
+       AUTO-CANCEL OVERLAPPING BOOKINGS
+    ====================================== */
+    if ($status !== 'Available' && $start_date && $end_date) {
+
+        // Find overlapping bookings
+        $bookingSql = "
+            SELECT booking_facility_id
+            FROM booking_facility
+            WHERE facility_id = ?
+              AND status != 'Cancelled'
+              AND start_date <= ?
+              AND end_date >= ?
+        ";
+
+        $bookingStmt = $conn->prepare($bookingSql);
+        $bookingStmt->bind_param(
+            "iss",
+            $facility_id,
+            $end_date,     // booking_start <= facility_end
+            $start_date    // booking_end >= facility_start
+        );
+        $bookingStmt->execute();
+        $bookingResult = $bookingStmt->get_result();
+
+        // Cancel overlapping bookings
+        if ($bookingResult->num_rows > 0) {
+
+            $cancelSql = "
+                UPDATE booking_facility
+                SET status = 'Cancelled'
+                WHERE booking_facility_id = ?
+            ";
+            $cancelStmt = $conn->prepare($cancelSql);
+
+            while ($booking = $bookingResult->fetch_assoc()) {
+                $cancelStmt->bind_param("i", $booking['booking_facility_id']);
+                $cancelStmt->execute();
+            }
+        }
+    }
+
+    header("Location: facility_details.php?id=" . $facility_id);
     exit;
 }
 
@@ -49,23 +96,31 @@ $facility_id = $_GET['id'] ?? '';
 $sql = "SELECT f.*, b.building_id 
         FROM facility f
         INNER JOIN block b ON f.block_id = b.block_id
-        WHERE f.facility_id = ? 
+        WHERE f.facility_id = ?
         LIMIT 1";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $facility_id);
 $stmt->execute();
 $facility = $stmt->get_result()->fetch_assoc();
 
-function s($k){ global $facility; return htmlspecialchars($facility[$k] ?? ''); }
+function s($k){
+    global $facility;
+    return htmlspecialchars($facility[$k] ?? '');
+}
 
-// Fetch buildings for dropdown
+/* =========================
+   FETCH BUILDINGS
+========================= */
 $buildings_sql = "SELECT building_id, building_name FROM building ORDER BY building_name ASC";
 $buildings_result = $conn->query($buildings_sql);
 
-// Fetch all blocks with building info
+/* =========================
+   FETCH BLOCKS
+========================= */
 $blocks_sql = "SELECT block_id, block_name, building_id FROM block ORDER BY block_name ASC";
 $blocks_result = $conn->query($blocks_sql);
 $blocks_data = [];
+
 if ($blocks_result && $blocks_result->num_rows > 0) {
     while ($block = $blocks_result->fetch_assoc()) {
         $blocks_data[] = $block;
@@ -76,14 +131,14 @@ if ($blocks_result && $blocks_result->num_rows > 0) {
 <?php include("../page/header.php"); ?>
 
 <main>
+
 <style>
-/* ===== UI AS IS ===== */
 .edit-page {
     max-width: 1100px;
     margin: 3.25rem auto;
     background: #fff;
     border-radius: 12px;
-    box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+    box-shadow: 0 12px 30px rgba(0,0,0,.06);
     padding: 2rem;
 }
 .edit-row {
@@ -110,12 +165,8 @@ if ($blocks_result && $blocks_result->num_rows > 0) {
     margin-top:1rem;
 }
 .btn-row .btn{border-radius:999px;}
-.date-fields {
-    display: none;
-}
-.date-fields.show {
-    display: contents;
-}
+.date-fields { display:none; }
+.date-fields.show { display:contents; }
 </style>
 
 <div class="container">
@@ -135,35 +186,28 @@ if ($blocks_result && $blocks_result->num_rows > 0) {
 </div>
 
 <div class="form-group">
-    <label>Building</label>
-    <select name="building_id" id="buildingSelect" required>
-        <option value="">-- Select Building --</option>
-        <?php
-        if ($buildings_result && $buildings_result->num_rows > 0) {
-            while ($building = $buildings_result->fetch_assoc()) {
-                $selected = ($building['building_id'] == $facility['building_id']) ? 'selected' : '';
-                echo '<option value="' . htmlspecialchars($building['building_id']) . '" ' . $selected . '>' 
-                     . htmlspecialchars($building['building_name']) 
-                     . '</option>';
-            }
-        }
-        ?>
-    </select>
+<label>Building</label>
+<select name="building_id" id="buildingSelect" required>
+<option value="">-- Select Building --</option>
+<?php while ($b = $buildings_result->fetch_assoc()): ?>
+<option value="<?= $b['building_id'] ?>" <?= ($b['building_id']==$facility['building_id'])?'selected':'' ?>>
+<?= htmlspecialchars($b['building_name']) ?>
+</option>
+<?php endwhile; ?>
+</select>
 </div>
 
 <div class="form-group">
-    <label>Block</label>
-    <select name="block_id" id="blockSelect" required>
-        <option value="">-- Select Block --</option>
-    </select>
+<label>Block</label>
+<select name="block_id" id="blockSelect" required></select>
 </div>
 
 <div class="form-group full-row">
 <label>Status</label>
 <select name="status" id="statusSelect" required>
-    <option value="Available" <?= (s('status')=='Available')?'selected':'' ?>>Available</option>
-    <option value="Occupied" <?= (s('status')=='Occupied')?'selected':'' ?>>Occupied</option>
-    <option value="Maintenance" <?= (s('status')=='Maintenance')?'selected':'' ?>>Maintenance</option>
+<option value="Available" <?= (s('status')=='Available')?'selected':'' ?>>Available</option>
+<option value="Occupied" <?= (s('status')=='Occupied')?'selected':'' ?>>Occupied</option>
+<option value="Maintenance" <?= (s('status')=='Maintenance')?'selected':'' ?>>Maintenance</option>
 </select>
 </div>
 
@@ -172,7 +216,7 @@ if ($blocks_result && $blocks_result->num_rows > 0) {
 <input type="date" name="start_date" id="startDate" value="<?= s('start_date') ?>">
 </div>
 
-<div class="form-group date-fields" id="dateFields2">
+<div class="form-group date-fields">
 <label>End Date</label>
 <input type="date" name="end_date" id="endDate" value="<?= s('end_date') ?>">
 </div>
@@ -180,11 +224,7 @@ if ($blocks_result && $blocks_result->num_rows > 0) {
 </div>
 
 <div class="btn-row">
-<a href="facility_details.php?id=<?= s('facility_id') ?>" 
-   class="btn btn-outline-secondary">
-   Cancel
-</a>
-
+<a href="facility_details.php?id=<?= s('facility_id') ?>" class="btn btn-outline-secondary">Cancel</a>
 <button type="submit" class="btn btn-success">Save</button>
 </div>
 
@@ -193,78 +233,41 @@ if ($blocks_result && $blocks_result->num_rows > 0) {
 </div>
 
 <script>
-// Pass PHP data to JavaScript
-const blocksData = <?php echo json_encode($blocks_data); ?>;
+const blocksData = <?= json_encode($blocks_data); ?>;
 const currentBlockId = "<?= s('block_id') ?>";
-const currentStatus = "<?= s('status') ?>";
 
-// Populate blocks based on selected building
-function populateBlocks(buildingId, selectedBlockId = null) {
+function populateBlocks(buildingId, selectedBlockId=null){
     const blockSelect = document.getElementById('blockSelect');
     blockSelect.innerHTML = '<option value="">-- Select Block --</option>';
-    
-    if (!buildingId) {
-        blockSelect.disabled = true;
-        return;
-    }
-    
-    const filteredBlocks = blocksData.filter(block => block.building_id === buildingId);
-    
-    if (filteredBlocks.length === 0) {
-        blockSelect.innerHTML = '<option value="">-- No Blocks Available --</option>';
-        blockSelect.disabled = true;
-        return;
-    }
-    
-    filteredBlocks.forEach(block => {
-        const option = document.createElement('option');
-        option.value = block.block_id;
-        option.textContent = block.block_name;
-        if (selectedBlockId && block.block_id === selectedBlockId) {
-            option.selected = true;
-        }
-        blockSelect.appendChild(option);
+
+    const filtered = blocksData.filter(b => b.building_id === buildingId);
+
+    filtered.forEach(b=>{
+        const o = document.createElement('option');
+        o.value = b.block_id;
+        o.textContent = b.block_name;
+        if (b.block_id === selectedBlockId) o.selected = true;
+        blockSelect.appendChild(o);
     });
-    
-    blockSelect.disabled = false;
 }
 
-// Handle building selection change
-document.getElementById('buildingSelect').addEventListener('change', function() {
-    populateBlocks(this.value);
+document.getElementById('buildingSelect').addEventListener('change', e=>{
+    populateBlocks(e.target.value);
 });
 
-// Initialize blocks on page load
-const initialBuildingId = document.getElementById('buildingSelect').value;
-if (initialBuildingId) {
-    populateBlocks(initialBuildingId, currentBlockId);
-}
+populateBlocks(
+    document.getElementById('buildingSelect').value,
+    currentBlockId
+);
 
-// Handle status change - show/hide date fields
-function toggleDateFields() {
+// Status toggle
+function toggleDates(){
     const status = document.getElementById('statusSelect').value;
-    const dateFields = document.querySelectorAll('.date-fields');
-    const startDate = document.getElementById('startDate');
-    const endDate = document.getElementById('endDate');
-    
-    if (status === 'Available') {
-        dateFields.forEach(field => field.classList.remove('show'));
-        startDate.removeAttribute('required');
-        endDate.removeAttribute('required');
-        startDate.value = '';
-        endDate.value = '';
-    } else {
-        dateFields.forEach(field => field.classList.add('show'));
-        startDate.setAttribute('required', 'required');
-        endDate.setAttribute('required', 'required');
-    }
+    document.querySelectorAll('.date-fields')
+        .forEach(f => f.classList.toggle('show', status !== 'Available'));
 }
-
-// Initialize date fields visibility
-document.getElementById('statusSelect').addEventListener('change', toggleDateFields);
-
-// Set initial state on page load
-toggleDateFields();
+document.getElementById('statusSelect').addEventListener('change', toggleDates);
+toggleDates();
 </script>
 
 </main>

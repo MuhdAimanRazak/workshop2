@@ -246,7 +246,7 @@ html, body {
 <div class="container-fluid">
 
 <div class="student-back">
-    <a href="<?= $back_url ?>" class="text-decoration-none text-dark">← Back to list</a>
+    <a href="student.php" class="text-decoration-none text-dark">← Back to list</a>
 </div>
 
 <div class="profile-shell">
